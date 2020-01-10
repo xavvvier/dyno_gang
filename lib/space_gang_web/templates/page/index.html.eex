@@ -1,0 +1,4 @@
+<div class="flex-container">
+   <div id="game"></div>
+</div>
+<span class="hidden">sample text</span>
