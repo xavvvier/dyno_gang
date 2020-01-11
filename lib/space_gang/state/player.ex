@@ -1,6 +1,5 @@
 defmodule SpaceGang.State.Player do
   defstruct name: "",
-    socket: nil,
     moving: false,
     direction: "R",
     score: 0

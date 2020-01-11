@@ -10,7 +10,7 @@ defmodule SpaceGang.Application do
     children = [
       # Start the endpoint when the application starts
       SpaceGangWeb.Endpoint,
-      SpaceGang.GameServer
+      SpaceGangWeb.GameServer
       # Starts a worker by calling: SpaceGang.Worker.start_link(arg)
       # {SpaceGang.Worker, arg},
     ]

@@ -47,6 +47,7 @@ export class Game{
       right.release = () => { this.sendKey('right_release'); }
       this.channel.on('player_move', payload => this.player_move(payload));
       this.channel.on('current_rank', payload => console.log(payload));
+      this.channel.on('obstacle_event', payload => console.log(payload));
    }
 
    sendKey(key){

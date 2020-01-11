@@ -1,8 +1,9 @@
-defmodule SpaceGang.GameServer do
+defmodule SpaceGangWeb.GameServer do
   use GenServer
 
   alias SpaceGang.State.Game
   alias SpaceGang.State.Player
+  alias SpaceGangWeb.Endpoint
 
   #Client
 
@@ -10,8 +11,8 @@ defmodule SpaceGang.GameServer do
     GenServer.start(__MODULE__, %Game{}, name: :game_server)
   end
 
-  def add_player(player, socket) do
-    GenServer.call(:game_server, {:add_player, player, socket})
+  def add_player(player) do
+    GenServer.call(:game_server, {:add_player, player})
   end
 
   def player_move(player_name, move) do
@@ -22,18 +23,18 @@ defmodule SpaceGang.GameServer do
 
   def init(state) do
     IO.puts("Game server started")
-    :timer.send_interval(16, :game_tick)
+    :timer.send_interval(1000, :obstable_generator)
     {:ok, state}
   end
 
-  def handle_call({:add_player, player, socket}, _from, state) do
+  def handle_call({:add_player, player}, _from, state) do
     #create a new player state
     #TODO: what if it's a reconnection?
-    player_state = %Player{socket: socket} 
+    player_state = %Player{} 
     new_state = %{state | 
       players: Map.put(state.players, player, player_state)
     }
-    IO.inspect(player, label: "player added")
+    IO.inspect(player, label: "player joined")
     {:reply, new_state, new_state}
   end
 
@@ -48,15 +49,8 @@ defmodule SpaceGang.GameServer do
     {:noreply, state}
   end
 
-  def handle_info(:game_tick, state)  do
-    #Iterate on all player's socket and push the event
-    Enum.each(state.players, fn {player_name, player_state} ->
-      if player_state.socket.joined do
-        Phoenix.Channel.push(player_state.socket, 
-          "current_rank",
-          %{val: 34})
-      end
-    end)
+  def handle_info(:obstable_generator, state)  do
+    Endpoint.broadcast!("obstacle:all", "obstacle_event", %{x: 4, speed: 23})
     {:noreply, state}
   end
   

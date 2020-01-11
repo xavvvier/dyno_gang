@@ -1,10 +1,16 @@
 defmodule SpaceGangWeb.GameChannel do
   use Phoenix.Channel
 
-  alias SpaceGang.GameServer
+  alias SpaceGangWeb.GameServer
+  alias SpaceGangWeb.Endpoint
+  alias Phoenix.Socket.Broadcast
 
   def join("game:all", _message, socket) do
-    send(self(), :after_join)
+    #Add the player to the game state
+    player_name = Map.get(socket.assigns, :user_id)
+    GameServer.add_player(player_name)
+    #Subscribe to the obstacle topic
+    Endpoint.subscribe("obstacle:all")
     {:ok, socket}
   end
   
@@ -17,16 +23,16 @@ defmodule SpaceGangWeb.GameChannel do
     {:noreply, socket}
   end
 
-  def handle_info(:after_join, socket) do
-    player_name = Map.get(socket.assigns, :user_id)
-    GameServer.add_player(player_name, socket)
+  #Message generated at intervals in GameServer to broadcast obstacle events
+  def handle_info(%Broadcast{event: event, payload: payload}, socket) do
+    push(socket, event, payload)
     {:noreply, socket}
   end
 
   def terminate(reason, state) do
     IO.puts("GameChannel about to exit!!!!!!")
     IO.inspect(reason, label: "reason")
-    IO.inspect(state, label: "reason")
+    IO.inspect(state, label: "state")
   end
 
 end
