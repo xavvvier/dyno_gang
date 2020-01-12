@@ -1,9 +1,9 @@
-defmodule SpaceGangWeb.GameServer do
+defmodule DynoGangWeb.GameServer do
   use GenServer
 
-  alias SpaceGang.State.Game
-  alias SpaceGang.State.Player
-  alias SpaceGangWeb.Endpoint
+  alias DynoGang.State.Game
+  alias DynoGang.State.Player
+  alias DynoGangWeb.Endpoint
 
   #Client
 
@@ -16,7 +16,7 @@ defmodule SpaceGangWeb.GameServer do
   end
 
   def player_move(player_name, move) do
-    GenServer.cast(:game_server, {:player_move, player_name, move})
+    GenServer.call(:game_server, {:player_move, player_name, move})
   end
 
   #Server
@@ -38,15 +38,14 @@ defmodule SpaceGangWeb.GameServer do
     {:reply, new_state, new_state}
   end
 
-  def handle_cast({:player_move, player_name, key}, state) do
+  def handle_call({:player_move, player_name, key}, _from, state) do
     #get the player state
     player_state = Map.get(state.players, player_name)
     #update the game state
     state = %{state | 
       players: Map.put(state.players, player_name, Player.move(player_state, key)) 
     }
-    IO.inspect(state, label: "new state")
-    {:noreply, state}
+    {:reply, state, state}
   end
 
   def handle_info(:obstable_generator, state)  do

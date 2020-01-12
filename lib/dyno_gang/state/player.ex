@@ -1,10 +1,11 @@
-defmodule SpaceGang.State.Player do
+defmodule DynoGang.State.Player do
+  @derive {Jason.Encoder, only: [:name, :moving, :direction, :score]}
   defstruct name: "",
     moving: false,
     direction: "R",
     score: 0
 
-  alias SpaceGang.State.Player
+  alias DynoGang.State.Player
 
   def move(%Player{} = player, "right_press") do
     %{player | moving: true, direction: "R"}

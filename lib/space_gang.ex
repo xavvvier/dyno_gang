@@ -1,6 +1,6 @@
-defmodule SpaceGang do
+defmodule DynoGang do
   @moduledoc """
-  SpaceGang keeps the contexts that define your domain
+  DynoGang keeps the contexts that define your domain
   and business logic.
 
   Contexts are also responsible for managing your data, regardless

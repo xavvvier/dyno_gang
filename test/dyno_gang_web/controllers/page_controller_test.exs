@@ -1,5 +1,5 @@
-defmodule SpaceGangWeb.PageControllerTest do
-  use SpaceGangWeb.ConnCase
+defmodule DynoGangWeb.PageControllerTest do
+  use DynoGangWeb.ConnCase
 
   test "GET /", %{conn: conn} do
     conn = get(conn, "/")

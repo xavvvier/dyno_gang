@@ -1,5 +1,5 @@
-defmodule SpaceGangWeb.Router do
-  use SpaceGangWeb, :router
+defmodule DynoGangWeb.Router do
+  use DynoGangWeb, :router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -13,14 +13,14 @@ defmodule SpaceGangWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", SpaceGangWeb do
+  scope "/", DynoGangWeb do
     pipe_through :browser
 
     get "/", PageController, :index
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", SpaceGangWeb do
+  # scope "/api", DynoGangWeb do
   #   pipe_through :api
   # end
 end

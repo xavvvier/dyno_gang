@@ -1,4 +1,4 @@
-defmodule SpaceGang.Application do
+defmodule DynoGang.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -9,22 +9,22 @@ defmodule SpaceGang.Application do
     # List all child processes to be supervised
     children = [
       # Start the endpoint when the application starts
-      SpaceGangWeb.Endpoint,
-      SpaceGangWeb.GameServer
-      # Starts a worker by calling: SpaceGang.Worker.start_link(arg)
-      # {SpaceGang.Worker, arg},
+      DynoGangWeb.Endpoint,
+      DynoGangWeb.GameServer
+      # Starts a worker by calling: DynoGang.Worker.start_link(arg)
+      # {DynoGang.Worker, arg},
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: SpaceGang.Supervisor]
+    opts = [strategy: :one_for_one, name: DynoGang.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
   def config_change(changed, _new, removed) do
-    SpaceGangWeb.Endpoint.config_change(changed, removed)
+    DynoGangWeb.Endpoint.config_change(changed, removed)
     :ok
   end
 end

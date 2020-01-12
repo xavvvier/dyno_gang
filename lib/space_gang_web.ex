@@ -1,12 +1,12 @@
-defmodule SpaceGangWeb do
+defmodule DynoGangWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, views, channels and so on.
 
   This can be used in your application as:
 
-      use SpaceGangWeb, :controller
-      use SpaceGangWeb, :view
+      use DynoGangWeb, :controller
+      use DynoGangWeb, :view
 
   The definitions below will be executed for every view,
   controller, etc, so keep them short and clean, focused
@@ -19,19 +19,19 @@ defmodule SpaceGangWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: SpaceGangWeb
+      use Phoenix.Controller, namespace: DynoGangWeb
 
       import Plug.Conn
-      import SpaceGangWeb.Gettext
-      alias SpaceGangWeb.Router.Helpers, as: Routes
+      import DynoGangWeb.Gettext
+      alias DynoGangWeb.Router.Helpers, as: Routes
     end
   end
 
   def view do
     quote do
       use Phoenix.View,
-        root: "lib/space_gang_web/templates",
-        namespace: SpaceGangWeb
+        root: "lib/dyno_gang_web/templates",
+        namespace: DynoGangWeb
 
       # Import convenience functions from controllers
       import Phoenix.Controller, only: [get_flash: 1, get_flash: 2, view_module: 1]
@@ -39,9 +39,9 @@ defmodule SpaceGangWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
-      import SpaceGangWeb.ErrorHelpers
-      import SpaceGangWeb.Gettext
-      alias SpaceGangWeb.Router.Helpers, as: Routes
+      import DynoGangWeb.ErrorHelpers
+      import DynoGangWeb.Gettext
+      alias DynoGangWeb.Router.Helpers, as: Routes
     end
   end
 
@@ -56,7 +56,7 @@ defmodule SpaceGangWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import SpaceGangWeb.Gettext
+      import DynoGangWeb.Gettext
     end
   end
 

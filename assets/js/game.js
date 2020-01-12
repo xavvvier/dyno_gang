@@ -1,13 +1,18 @@
 import {keyboard} from './keyboard'
 import {Socket} from "phoenix"
+import {Player} from "./player"
    
 //Aliases
 let Application = PIXI.Application,
    Container = PIXI.Container,
    Sprite = PIXI.Sprite,
-   loader = PIXI.Loader.shared;
+   loader = PIXI.Loader.shared,
+   Assets = {
+      player: "images/player.json"
+   }
 
 export class Game{
+
 
    constructor(domElement, options){
       this.domElement = domElement;
@@ -18,12 +23,11 @@ export class Game{
    init(){
       //Create the pixi application
       this.app = new Application({width: this.options.width, height: this.options.height});
-      this.container = new Container();
       //Add the canvas to the document
       this.domElement.appendChild(this.app.view);
       //Load assets
       loader.add([
-         'images/playerShip1_blue.png'
+         Assets.player
       ]).load(() => this.setup());
       //Create the socket and connect to it
       let socket = new Socket("/socket", {params: {token: 'javier'}})
@@ -35,33 +39,28 @@ export class Game{
    }
 
    setup(){
-      this.player = new Sprite(loader.resources['images/playerShip1_blue.png'].texture);
-      this.player.x = 100;
-      this.player.y = 430;
-      this.player.scale.set(0.5, 0.5);
-      this.container.addChild(this.player);
+      let playerSprite = loader.resources[Assets.player].spritesheet;
+      this.container = new Container();
       this.app.stage.addChild(this.container);
+      this.player = new Player(playerSprite, this.container, this.options);
       let left = keyboard("ArrowLeft"),
          right = keyboard("ArrowRight");
       right.press = () => { this.sendKey('right_press'); }
       right.release = () => { this.sendKey('right_release'); }
-      this.channel.on('player_move', payload => this.player_move(payload));
+      left.press = () => { this.sendKey('left_press'); }
+      left.release = () => { this.sendKey('left_release'); }
+      this.channel.on('player_move', payload => this.player.move(payload.response));
       this.channel.on('current_rank', payload => console.log(payload));
       this.channel.on('obstacle_event', payload => console.log(payload));
+      this.app.ticker.add(delta => this.gameLoop(delta));
+   }
+
+   gameLoop(){
+      this.player.update();
    }
 
    sendKey(key){
       this.channel.push("action", {key: key});
    }
 
-   player_move(data) {
-      console.log('received from server', data);
-   }
-
-   moveRight() {
-      console.log('moving right');
-   }
-   stopMoving() {
-      console.log('stop moving');
-   }
 }

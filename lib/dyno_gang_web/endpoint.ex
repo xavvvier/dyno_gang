@@ -1,7 +1,7 @@
-defmodule SpaceGangWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :space_gang
+defmodule DynoGangWeb.Endpoint do
+  use Phoenix.Endpoint, otp_app: :dyno_gang
 
-  socket "/socket", SpaceGangWeb.UserSocket,
+  socket "/socket", DynoGangWeb.UserSocket,
     websocket: true,
     longpoll: false
 
@@ -11,7 +11,7 @@ defmodule SpaceGangWeb.Endpoint do
   # when deploying your static files in production.
   plug Plug.Static,
     at: "/",
-    from: :space_gang,
+    from: :dyno_gang,
     gzip: false,
     only: ~w(css fonts images js favicon.ico robots.txt)
 
@@ -39,8 +39,8 @@ defmodule SpaceGangWeb.Endpoint do
   # Set :encryption_salt if you would also like to encrypt it.
   plug Plug.Session,
     store: :cookie,
-    key: "_space_gang_key",
+    key: "_dyno_gang_key",
     signing_salt: "qc7ScvYc"
 
-  plug SpaceGangWeb.Router
+  plug DynoGangWeb.Router
 end

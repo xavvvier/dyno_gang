@@ -1,4 +1,4 @@
-defmodule SpaceGangWeb.ConnCase do
+defmodule DynoGangWeb.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -11,7 +11,7 @@ defmodule SpaceGangWeb.ConnCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use SpaceGangWeb.ConnCase, async: true`, although
+  by setting `use DynoGangWeb.ConnCase, async: true`, although
   this option is not recommendded for other databases.
   """
 
@@ -21,10 +21,10 @@ defmodule SpaceGangWeb.ConnCase do
     quote do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
-      alias SpaceGangWeb.Router.Helpers, as: Routes
+      alias DynoGangWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
-      @endpoint SpaceGangWeb.Endpoint
+      @endpoint DynoGangWeb.Endpoint
     end
   end
 

@@ -8,11 +8,11 @@
 use Mix.Config
 
 # Configures the endpoint
-config :space_gang, SpaceGangWeb.Endpoint,
+config :dyno_gang, DynoGangWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "gdOSJH3OobbiPajydhDQTbqr+3MPLJvA2aHhMyIJhPx8DUEd8/3n5C+XSK+Dy7jk",
-  render_errors: [view: SpaceGangWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: SpaceGang.PubSub, adapter: Phoenix.PubSub.PG2]
+  render_errors: [view: DynoGangWeb.ErrorView, accepts: ~w(html json)],
+  pubsub: [name: DynoGang.PubSub, adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger
 config :logger, :console,

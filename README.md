@@ -1,4 +1,4 @@
-# SpaceGang
+# DynoGang
 
 To start your Phoenix server:
 

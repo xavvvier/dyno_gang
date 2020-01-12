@@ -1,8 +1,8 @@
-defmodule SpaceGangWeb.GameChannel do
+defmodule DynoGangWeb.GameChannel do
   use Phoenix.Channel
 
-  alias SpaceGangWeb.GameServer
-  alias SpaceGangWeb.Endpoint
+  alias DynoGangWeb.GameServer
+  alias DynoGangWeb.Endpoint
   alias Phoenix.Socket.Broadcast
 
   def join("game:all", _message, socket) do
@@ -19,7 +19,9 @@ defmodule SpaceGangWeb.GameChannel do
   end
 
   def handle_in("action", %{"key" => key}, socket) do
-    broadcast!(socket, "player_move", %{response: key})
+    player_name = Map.get(socket.assigns, :user_id)
+    state = GameServer.player_move(player_name, key)
+    broadcast!(socket, "player_move", %{response: state})
     {:noreply, socket}
   end
 

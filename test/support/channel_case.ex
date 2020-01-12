@@ -1,4 +1,4 @@
-defmodule SpaceGangWeb.ChannelCase do
+defmodule DynoGangWeb.ChannelCase do
   @moduledoc """
   This module defines the test case to be used by
   channel tests.
@@ -21,7 +21,7 @@ defmodule SpaceGangWeb.ChannelCase do
       use Phoenix.ChannelTest
 
       # The default endpoint for testing
-      @endpoint SpaceGangWeb.Endpoint
+      @endpoint DynoGangWeb.Endpoint
     end
   end
 

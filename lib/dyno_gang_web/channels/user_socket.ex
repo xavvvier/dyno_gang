@@ -1,8 +1,8 @@
-defmodule SpaceGangWeb.UserSocket do
+defmodule DynoGangWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  channel "game:*", SpaceGangWeb.GameChannel
+  channel "game:*", DynoGangWeb.GameChannel
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
@@ -26,7 +26,7 @@ defmodule SpaceGangWeb.UserSocket do
   # Would allow you to broadcast a "disconnect" event and terminate
   # all active sockets and channels for a given user:
   #
-  #     SpaceGangWeb.Endpoint.broadcast("user_socket:#{user.id}", "disconnect", %{})
+  #     DynoGangWeb.Endpoint.broadcast("user_socket:#{user.id}", "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
   def id(_socket), do: nil

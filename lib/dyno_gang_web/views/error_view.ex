@@ -1,5 +1,5 @@
-defmodule SpaceGangWeb.ErrorView do
-  use SpaceGangWeb, :view
+defmodule DynoGangWeb.ErrorView do
+  use DynoGangWeb, :view
 
   # If you want to customize a particular status code
   # for a certain format, you may uncomment below.
