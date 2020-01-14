@@ -15,6 +15,12 @@ export class Player{
          bottom: options.height - border,
          right: options.width - border
       };
+      this.loadSprites(spriteSheet, container);
+      this.state = {};
+      this.floor = this.bounds.bottom - this.sprite.height/2;
+   }
+
+   loadSprites(spriteSheet, container){
       let animations = ['idle', 'run', 'jump'];
       for (var anim of animations) {
          this.sprites[anim] = new PIXI.AnimatedSprite(
@@ -32,8 +38,6 @@ export class Player{
       this.sprite.y = this.bounds.bottom - this.sprite.height/2;
       this.sprite.x = 80;
       this.sprite.play();
-      this.state = {};
-      this.floor = this.bounds.bottom - this.sprite.height/2;
    }
 
    update(){
@@ -51,12 +55,14 @@ export class Player{
             //Stop x velocity if no direction is given (no left-right key is pressed)
             if(this.direction == ""){
                this.vx = 0;
+            } else {
+               this.vx = this.direction == "right" ? this.speed: -this.speed;
             }
-            if(this.vx !== 0){
-               this.switchToSprite("run");
-            }else{
-               this.switchToSprite("idle");
-            }
+         }
+         if(this.vx !== 0){
+            this.switchToSprite("run");
+         }else{
+            this.switchToSprite("idle");
          }
       }
    }
@@ -75,7 +81,7 @@ export class Player{
             this.direction = key;
             //Flips sprite vertically 
             this.sprite.scale.x = this.direction == "left" ? -1 : 1;
-            //If not on the floor, it can't move horizontally
+            //If when not on the floor, it can't move horizontally
             if(this.onFloor()){
                this.vx = key == "right" ? this.speed: -this.speed;
             }
