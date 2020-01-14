@@ -44,14 +44,16 @@ export class Game{
       this.app.stage.addChild(this.container);
       this.player = new Player(playerSprite, this.container, this.options);
       let left = keyboard("ArrowLeft"),
-         right = keyboard("ArrowRight");
-      right.press = () => { this.sendKey('right_press'); }
-      right.release = () => { this.sendKey('right_release'); }
-      left.press = () => { this.sendKey('left_press'); }
-      left.release = () => { this.sendKey('left_release'); }
-      this.channel.on('player_move', payload => this.player.move(payload.response));
-      this.channel.on('current_rank', payload => console.log(payload));
-      this.channel.on('obstacle_event', payload => console.log(payload));
+         right = keyboard("ArrowRight"),
+         up = keyboard("ArrowUp");
+      up.press = () => { this.sendKey('up.press'); };
+      right.press = () => { this.sendKey('right.press') }
+      right.release = () => { this.sendKey('right.release') }
+      left.press = () => { this.sendKey('left.press') }
+      left.release = () => { this.sendKey('left.release') }
+      this.channel.on('player_move', payload => {
+         this.player.move(payload.response)
+      });
       this.app.ticker.add(delta => this.gameLoop(delta));
    }
 

@@ -1,20 +1,13 @@
 defmodule DynoGang.State.Player do
-  @derive {Jason.Encoder, only: [:name, :moving, :direction, :score]}
+  @derive {Jason.Encoder, only: [:name, :move, :score]}
   defstruct name: "",
-    moving: false,
-    direction: "R",
+    move: "",
     score: 0
 
   alias DynoGang.State.Player
 
-  def move(%Player{} = player, "right_press") do
-    %{player | moving: true, direction: "R"}
-  end
-  def move(%Player{} = player, "left_press") do
-    %{player | moving: true, direction: "L"}
-  end
-  def move(%Player{} = player, _) do
-    %{player | moving: false}
+  def move(%Player{} = player, move) do
+    %{player | move: move}
   end
 
 end
