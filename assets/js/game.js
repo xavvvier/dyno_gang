@@ -9,7 +9,11 @@ let Application = PIXI.Application,
    loader = PIXI.Loader.shared,
    Assets = {
       player: "images/player.json",
-      background: "images/backgrounds/stars_blue.png"
+      background: "images/backgrounds/stars_blue.png",
+      obstacle1: "images/fan.json",
+      obstacle2: "images/fire.json",
+      obstacle3: "images/rockhead.json",
+      obstacle4: "images/spikehead.json"
    }
 
 export class Game{
@@ -29,7 +33,11 @@ export class Game{
       //Load assets
       loader.add([
          Assets.player,
-         Assets.background
+         Assets.background,
+         Assets.obstacle1,
+         Assets.obstacle2,
+         Assets.obstacle3,
+         Assets.obstacle4
       ]).load(() => this.setup());
       //Create the socket and connect to it
       this.socket = new Socket("/socket", {params: {token: window.userToken}})
@@ -43,7 +51,6 @@ export class Game{
            for(const player in resp.players) {
               this.onPlayerJoin(resp.players[player]);
            }
-           console.log("Joined successfully")
         })
         .receive("error", resp => { console.log("Unable to join", resp) })
       let playerSprite = loader.resources[Assets.player].spritesheet;
@@ -54,6 +61,7 @@ export class Game{
       this.container.addChild(this.bgSprite);
       this.player = new Player(playerSprite, this.container, this.options);
       this.players = {};
+      this.obstacles = [];
       //Key binding
       let left = keyboard("ArrowLeft"),
          right = keyboard("ArrowRight"),
@@ -65,17 +73,37 @@ export class Game{
       left.release = () => { this.sendKey('left.release') }
       //Update the player based on the data received from the server
       this.channel.on('player_move', data => { this.gameAction(data.response.players) })
-      // this.channel.on('obstacle_event', data => {console.log(data);})
+      this.channel.on('obstacle_event', data => {this.onNewObstacle(data);})
       this.channel.on('player_joined', data => {this.onPlayerJoin(data);})
       this.channel.on('player_left', data => {this.onPlayerLeave(data);})
       this.player.onJumpFinished = () => { this.sendKey('up.release') };
-      this.app.ticker.add(delta => this.gameLoop(delta));
+      this.gameLoop();
+   }
+
+   onNewObstacle(data) {
+      let types = [Assets.obstacle1, Assets.obstacle2, Assets.obstacle3, Assets.obstacle4];
+      let type = types[data.type-1];
+      let spritesheet = loader.resources[type].spritesheet;
+      let obstacle = new PIXI.AnimatedSprite(spritesheet.animations.default);
+      obstacle.animationSpeed = 0.1;
+      obstacle.anchor.set(0.5, 1);
+      obstacle.y = this.options.height - 20;
+      obstacle.x = this.options.width + obstacle.width;
+      this.container.addChild(obstacle);
+      this.obstacles.push(obstacle);
+      obstacle.play();
    }
 
    onPlayerJoin(data) {
       let playerSprite = loader.resources[Assets.player].spritesheet;
       let player = new Player(playerSprite, this.container, this.options); 
       this.players[data.name] = player;
+      //If the player doesn't have a x position, this means someone else joined the game
+      //the user will be located in the initial default position. 
+      //If the player does have a x position, it means we are joining the game
+      //and therefore we need to locate those players in their most recent position
+      //update the position based on the last action sent to the server
+      if(data.x) { player.x = data.x; }
    }
 
    onPlayerLeave(data) {
@@ -101,11 +129,20 @@ export class Game{
       for(const remotePlayer in this.players){
          this.players[remotePlayer].update();
       }
+      //Move the obstacles
+      for(const obs of this.obstacles){
+         obs.x -= 3;
+         if(obs.x < 0 - obs.width){
+            this.container.removeChild(obs);
+            this.obstacles.splice(this.obstacles.indexOf(obs), 1);
+         }
+      }
+      requestAnimationFrame(() => this.gameLoop());
    }
 
    sendKey(key){
       //Send the key action to be processed and broadcasted by the server
-      this.channel.push("action", {key: key, user: window.userToken});
+      this.channel.push("action", {key: key, x: this.player.position.x });
    }
 
 }

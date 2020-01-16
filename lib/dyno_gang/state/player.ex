@@ -1,5 +1,5 @@
 defmodule DynoGang.State.Player do
-  @derive {Jason.Encoder, only: [:name, :move, :score]}
+  @derive {Jason.Encoder, only: [:name, :move, :score, :x]}
   defstruct name: "",
     move: "",
     x: 0,
@@ -7,8 +7,8 @@ defmodule DynoGang.State.Player do
 
   alias DynoGang.State.Player
 
-  def move(%Player{} = player, move) do
-    %{player | move: move}
+  def move(%Player{} = player, move, x) do
+    %{player | move: move, x: x}
   end
 
 end

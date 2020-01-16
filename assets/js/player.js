@@ -131,4 +131,12 @@ export class Player{
       this.sprite.play();
    }
 
+   get position() {
+      return {x: this.sprite.x, y: this.sprite.y};
+   }
+
+   set x(value) {
+      this.sprite.x = value;
+   }
+
 }
