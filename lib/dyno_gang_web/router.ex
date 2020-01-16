@@ -16,7 +16,7 @@ defmodule DynoGangWeb.Router do
   scope "/", DynoGangWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    get "/:user", PageController, :index
   end
 
   # Other scopes may use custom stacks.

@@ -15,12 +15,16 @@ export class Player{
          bottom: options.height - border,
          right: options.width - border
       };
-      this.loadSprites(spriteSheet, container);
+      this.parentContainer = container;
+      this.playerContainer = new PIXI.Container();
+      this.loadSprites(spriteSheet);
+      this.parentContainer.addChild(this.playerContainer);
       this.state = {};
       this.floor = this.bounds.bottom - this.sprite.height/2;
+      this.onJumpFinished = () => {};
    }
 
-   loadSprites(spriteSheet, container){
+   loadSprites(spriteSheet){
       let animations = ['idle', 'run', 'jump'];
       for (var anim of animations) {
          this.sprites[anim] = new PIXI.AnimatedSprite(
@@ -30,7 +34,7 @@ export class Player{
          this.sprites[anim].anchor.set(0.5);
          this.sprites[anim].visible = false;
          this.sprites[anim].animationSpeed = 0.3;
-         container.addChild(this.sprites[anim]);
+         this.playerContainer.addChild(this.sprites[anim]);
       }
       //Create the pixi animated sprite
       this.sprite = this.sprites['idle'];
@@ -52,6 +56,7 @@ export class Player{
       if(this.onFloor()) {
          this.vy = 0;
          if(wasJumping){
+            this.onJumpFinished();
             //Stop x velocity if no direction is given (no left-right key is pressed)
             if(this.direction == ""){
                this.vx = 0;
@@ -67,13 +72,12 @@ export class Player{
       }
    }
 
-   move(data) {
-      let state = data.players.javier;
+   move(state) {
       this.state = state;
       let [key, action] = this.state.move.split('.');
       //Switch sprite animations based on key action
       //and change speed in x or y axis
-      if(key == "up" && this.onFloor()){ //Only can jump if on the floor
+      if(state.move == "up.press" && this.onFloor()){ //Only can jump if on the floor
          this.vy = -7;
          this.switchToSprite('jump');
       } else if(key == "right" || key == "left") {
@@ -100,6 +104,10 @@ export class Player{
             }
          }
       }
+   }
+
+   destroy() {
+      this.parentContainer.removeChild(this.playerContainer);
    }
 
    constrain(n, low, high){

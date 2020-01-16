@@ -19,6 +19,10 @@ defmodule DynoGangWeb.GameServer do
     GenServer.call(:game_server, {:player_move, player_name, move})
   end
 
+  def remove_player(player) do
+    GenServer.cast(:game_server, {:remove_player, player})
+  end
+
   #Server
 
   def init(state) do
@@ -28,14 +32,24 @@ defmodule DynoGangWeb.GameServer do
   end
 
   def handle_call({:add_player, player}, _from, state) do
+    current_players = state.players
     #create a new player state
-    #TODO: what if it's a reconnection?
-    player_state = %Player{} 
+    player_state = %Player{name: player} 
     new_state = %{state | 
       players: Map.put(state.players, player, player_state)
     }
+    Endpoint.broadcast!("obstacle:all", "player_joined", player_state)
     IO.inspect(player, label: "player joined")
-    {:reply, new_state, new_state}
+    {:reply, current_players, new_state}
+  end
+
+  def handle_cast({:remove_player, player}, state) do
+    new_state = %{state | 
+      players: Map.delete(state.players, player)
+    }
+    Endpoint.broadcast!("obstacle:all", "player_left", %{name: player})
+    IO.inspect(player, label: "player left")
+    {:noreply, new_state}
   end
 
   def handle_call({:player_move, player_name, key}, _from, state) do

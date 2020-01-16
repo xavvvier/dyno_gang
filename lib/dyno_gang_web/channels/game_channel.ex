@@ -6,12 +6,13 @@ defmodule DynoGangWeb.GameChannel do
   alias Phoenix.Socket.Broadcast
 
   def join("game:all", _message, socket) do
+    #Prepare a list of current players to send
     #Add the player to the game state
     player_name = Map.get(socket.assigns, :user_id)
-    GameServer.add_player(player_name)
+    current_players = GameServer.add_player(player_name)
     #Subscribe to the obstacle topic
     Endpoint.subscribe("obstacle:all")
-    {:ok, socket}
+    {:ok, %{players: current_players}, socket}
   end
   
   def join("game:" <> _private_room, _message, _socket) do
@@ -32,9 +33,7 @@ defmodule DynoGangWeb.GameChannel do
   end
 
   def terminate(reason, state) do
-    IO.puts("GameChannel about to exit!!!!!!")
-    IO.inspect(reason, label: "reason")
-    IO.inspect(state, label: "state")
+    GameServer.remove_player(state.assigns.user_id)
   end
 
 end
