@@ -25,7 +25,7 @@ export class Player{
    }
 
    loadSprites(spriteSheet){
-      let animations = ['idle', 'run', 'jump'];
+      let animations = ['idle', 'run', 'jump', 'fall', 'doublejump'];
       for (var anim of animations) {
          this.sprites[anim] = new PIXI.AnimatedSprite(
             spriteSheet.animations[anim]
@@ -58,7 +58,7 @@ export class Player{
          if(wasJumping){
             this.onJumpFinished();
             //Stop x velocity if no direction is given (no left-right key is pressed)
-            if(this.direction == ""){
+            if(!this.direction){
                this.vx = 0;
             } else {
                this.vx = this.direction == "right" ? this.speed: -this.speed;
@@ -129,6 +129,10 @@ export class Player{
       this.sprite.scale.x = this.previous.scale.x;
       this.sprite.visible = true;
       this.sprite.play();
+   }
+
+   finalAnimation(){
+      this.switchToSprite('doublejump');
    }
 
    get position() {

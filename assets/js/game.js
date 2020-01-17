@@ -123,6 +123,27 @@ export class Game{
       }
    }
 
+   collide(r1, r2) {
+     let margin = 5;
+     if (r1.x + r1.width - margin >= r2.x &&    // r1 right edge past r2 left
+         r1.x <= r2.x + r2.width -margin &&    // r1 left edge past r2 right
+         r1.y + r1.height -margin >= r2.y &&    // r1 top edge past r2 bottom
+         r1.y <= r2.y + r2.height - margin) {    // r1 bottom edge past r2 top
+           return true;
+     }
+     return false;
+   }
+
+   detectCollision() {
+      let collision = false;
+      for(const obs of this.obstacles){
+         if(this.collide(obs.getBounds(), this.player.sprite.getBounds())){
+            return true;
+         }
+      }
+      return false;
+   }
+
    gameLoop(){
       this.bgSprite.tilePosition.x -= 0.5;
       this.player.update();
@@ -137,7 +158,12 @@ export class Game{
             this.obstacles.splice(this.obstacles.indexOf(obs), 1);
          }
       }
-      requestAnimationFrame(() => this.gameLoop());
+      if (this.detectCollision()) {
+         document.body.appendChild(document.createTextNode('GAME OVER'));
+         this.player.finalAnimation();
+      } else {
+         requestAnimationFrame(() => this.gameLoop());
+      }
    }
 
    sendKey(key){
