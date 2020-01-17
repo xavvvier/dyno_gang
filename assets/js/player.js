@@ -45,8 +45,8 @@ export class Player{
    }
 
    tint(){
-      this.sprite.alpha = 0.5;
-      this.sprite.tint = 0xf22059;
+      this.sprite.alpha = 0.4;
+      // this.sprite.tint = 0xf22059;
    }
 
    update(){
@@ -132,6 +132,7 @@ export class Player{
       this.sprite.x = this.previous.x;
       this.sprite.y = this.previous.y;
       this.sprite.scale.x = this.previous.scale.x;
+      this.sprite.alpha = this.previous.alpha;
       this.sprite.visible = true;
       this.sprite.play();
    }

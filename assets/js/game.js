@@ -55,10 +55,16 @@ export class Game{
         .receive("error", resp => { console.log("Unable to join", resp) })
       let playerSprite = loader.resources[Assets.player].spritesheet;
       let bgTexture = loader.resources[Assets.background].texture;
+      //Contains all the other players
+      //adding this container first will put other players behind the local player
+      //(added after setup initialization)
+      this.otherPlayersContainer = new Container();
+      //Contains all the elements in the stage
       this.container = new Container();
       this.app.stage.addChild(this.container);
       this.bgSprite = new PIXI.TilingSprite(bgTexture, this.options.width, this.options.height);
       this.container.addChild(this.bgSprite);
+      this.container.addChild(this.otherPlayersContainer);
       this.player = new Player(playerSprite, this.container, this.options);
       this.players = {};
       this.obstacles = [];
@@ -73,7 +79,7 @@ export class Game{
       left.release = () => { this.sendKey('left.release') }
       //Update the player based on the data received from the server
       this.channel.on('player_move', data => { this.gameAction(data.response.players) })
-      this.channel.on('obstacle_event', data => {this.onNewObstacle(data);})
+      // this.channel.on('obstacle_event', data => {this.onNewObstacle(data);})
       this.channel.on('player_joined', data => {this.onPlayerJoin(data);})
       this.channel.on('player_left', data => {this.onPlayerLeave(data);})
       this.player.onJumpFinished = () => { this.sendKey('up.release') };
@@ -96,7 +102,7 @@ export class Game{
 
    onPlayerJoin(data) {
       let playerSprite = loader.resources[Assets.player].spritesheet;
-      let player = new Player(playerSprite, this.container, this.options); 
+      let player = new Player(playerSprite, this.otherPlayersContainer, this.options); 
       player.tint();
       this.players[data.name] = player;
       //If the player doesn't have a x position, this means someone else joined the game
