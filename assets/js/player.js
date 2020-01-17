@@ -25,7 +25,7 @@ export class Player{
    }
 
    loadSprites(spriteSheet){
-      let animations = ['idle', 'run', 'jump', 'fall', 'doublejump'];
+      let animations = ['idle', 'run', 'walljump', 'hit', 'jump', 'fall', 'doublejump'];
       for (var anim of animations) {
          this.sprites[anim] = new PIXI.AnimatedSprite(
             spriteSheet.animations[anim]
@@ -42,6 +42,11 @@ export class Player{
       this.sprite.y = this.bounds.bottom - this.sprite.height/2;
       this.sprite.x = 80;
       this.sprite.play();
+   }
+
+   tint(){
+      this.sprite.alpha = 0.5;
+      this.sprite.tint = 0xf22059;
    }
 
    update(){
@@ -131,8 +136,8 @@ export class Player{
       this.sprite.play();
    }
 
-   finalAnimation(){
-      this.switchToSprite('doublejump');
+   stop(){
+      this.switchToSprite('hit');
    }
 
    get position() {

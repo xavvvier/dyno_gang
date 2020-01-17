@@ -8,7 +8,7 @@ let Application = PIXI.Application,
    Sprite = PIXI.Sprite,
    loader = PIXI.Loader.shared,
    Assets = {
-      player: "images/player.json",
+      player: "images/virtualguy.json",
       background: "images/backgrounds/stars_blue.png",
       obstacle1: "images/fan.json",
       obstacle2: "images/fire.json",
@@ -97,6 +97,7 @@ export class Game{
    onPlayerJoin(data) {
       let playerSprite = loader.resources[Assets.player].spritesheet;
       let player = new Player(playerSprite, this.container, this.options); 
+      player.tint();
       this.players[data.name] = player;
       //If the player doesn't have a x position, this means someone else joined the game
       //the user will be located in the initial default position. 
@@ -160,7 +161,7 @@ export class Game{
       }
       if (this.detectCollision()) {
          document.body.appendChild(document.createTextNode('GAME OVER'));
-         this.player.finalAnimation();
+         this.player.stop();
       } else {
          requestAnimationFrame(() => this.gameLoop());
       }
