@@ -42,17 +42,14 @@ export class Game{
       //Create the socket and connect to it
       this.socket = new Socket("/socket", {params: {token: window.userToken}})
       this.socket.connect()
+      this.score = 0;
    }
 
    setup(){
       this.channel = this.socket.channel("game:all", {})
       this.channel.join()
-        .receive("ok", resp => { 
-           for(const player in resp.players) {
-              this.onPlayerJoin(resp.players[player]);
-           }
-        })
-        .receive("error", resp => { console.log("Unable to join", resp) })
+        .receive("ok", resp => this.onConnected(resp)) 
+        .receive("error", resp => console.log("Unable to join", resp))
       let playerSprite = loader.resources[Assets.player].spritesheet;
       let bgTexture = loader.resources[Assets.background].texture;
       //Contains all the other players
@@ -68,6 +65,24 @@ export class Game{
       this.player = new Player(playerSprite, this.container, this.options);
       this.players = {};
       this.obstacles = [];
+      this.keyBindings();
+      //Update the player based on the data received from the server
+      this.channel.on('player_move', data => { this.gameAction(data.response.players) })
+      this.channel.on('obstacle_event', data => {this.onNewObstacle(data);})
+      this.channel.on('player_joined', data => {this.onPlayerJoin(data);})
+      this.channel.on('player_left', data => {this.onPlayerLeave(data);})
+      this.player.onJumpFinished = () => { this.sendKey('up.release') };
+      this.gameLoop();
+   }
+
+   onConnected(resp){
+     //render the players already playing
+     for(const player in resp.players) {
+        this.onPlayerJoin(resp.players[player]);
+     }
+   }
+
+   keyBindings(){
       //Key binding
       let left = keyboard("ArrowLeft"),
          right = keyboard("ArrowRight"),
@@ -77,13 +92,7 @@ export class Game{
       right.release = () => { this.sendKey('right.release') }
       left.press = () => { this.sendKey('left.press') }
       left.release = () => { this.sendKey('left.release') }
-      //Update the player based on the data received from the server
-      this.channel.on('player_move', data => { this.gameAction(data.response.players) })
-      // this.channel.on('obstacle_event', data => {this.onNewObstacle(data);})
-      this.channel.on('player_joined', data => {this.onPlayerJoin(data);})
-      this.channel.on('player_left', data => {this.onPlayerLeave(data);})
-      this.player.onJumpFinished = () => { this.sendKey('up.release') };
-      this.gameLoop();
+
    }
 
    onNewObstacle(data) {
@@ -131,7 +140,7 @@ export class Game{
    }
 
    collide(r1, r2) {
-     let margin = 5;
+     let margin = 7;
      if (r1.x + r1.width - margin >= r2.x &&    // r1 right edge past r2 left
          r1.x <= r2.x + r2.width -margin &&    // r1 left edge past r2 right
          r1.y + r1.height -margin >= r2.y &&    // r1 top edge past r2 bottom
@@ -141,31 +150,38 @@ export class Game{
      return false;
    }
 
-   detectCollision() {
-      let collision = false;
-      for(const obs of this.obstacles){
-         if(this.collide(obs.getBounds(), this.player.sprite.getBounds())){
-            return true;
-         }
-      }
-      return false;
-   }
-
    gameLoop(){
       this.bgSprite.tilePosition.x -= 0.5;
       this.player.update();
       for(const remotePlayer in this.players){
          this.players[remotePlayer].update();
       }
-      //Move the obstacles
+      let collision = false;
       for(const obs of this.obstacles){
+         //Move the obstacle
          obs.x -= 3;
+         //detect collision
+         let obsBounds = obs.getBounds();
+         let playerBounds = this.player.sprite.getBounds();
+         if (this.collide(obsBounds, playerBounds)){
+            collision = true;
+         } else {
+            //Score if the user overcomes the obstacle
+            if(!obs.counted && obsBounds.x + obs.width < playerBounds.x + 1) {
+               let extraScore = Math.round(obsBounds.x/this.options.width*2) * 5;
+               this.score += (10 + extraScore);
+               obs.counted = true;
+               document.getElementById('score').innerText = this.score;
+            }
+         }
+         //Remove the obstacle if it's off screen
          if(obs.x < 0 - obs.width){
             this.container.removeChild(obs);
             this.obstacles.splice(this.obstacles.indexOf(obs), 1);
+            obs.destroy();
          }
       }
-      if (this.detectCollision()) {
+      if (collision) {
          document.body.appendChild(document.createTextNode('GAME OVER'));
          this.player.stop();
       } else {

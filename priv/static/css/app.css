@@ -4,6 +4,9 @@
     opacity: 0;
     font-size: 0;
  }
+ span {
+    font-family: pixellari, sans-serif;
+ }
  .flex-container {
     height: 100%;
     padding: 0;
@@ -18,5 +21,6 @@
     margin:0;
     padding:0;
     overflow: hidden;
+    color: white;
  }
 

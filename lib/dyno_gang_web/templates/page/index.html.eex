@@ -3,3 +3,6 @@
    <div id="game"></div>
 </div>
 <span class="hidden">sample text</span>
+<div>
+   Score: <span id="score">0</span>
+</div>
