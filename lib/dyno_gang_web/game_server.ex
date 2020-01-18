@@ -23,6 +23,10 @@ defmodule DynoGangWeb.GameServer do
     GenServer.cast(:game_server, {:remove_player, player})
   end
 
+  def player_dead(player) do
+    GenServer.call(:game_server, {:die, player})
+  end
+
   #Server
 
   def init(state) do
@@ -59,6 +63,16 @@ defmodule DynoGangWeb.GameServer do
     state = %{state | 
       players: Map.put(state.players, player_name, 
         Player.move(player_state, key, x, score)) 
+    }
+    {:reply, state, state}
+  end
+
+  def handle_call({:die, player_name}, _from, state) do
+    #get the player state
+    player_state = Map.get(state.players, player_name)
+    #update the game state
+    state = %{state | 
+      players: Map.put(state.players, player_name, Player.die(player_state)) 
     }
     {:reply, state, state}
   end

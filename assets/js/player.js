@@ -22,6 +22,7 @@ export class Player{
       this.state = {};
       this.floor = this.bounds.bottom - this.sprite.height/2;
       this.onJumpFinished = () => {};
+      this.dead = false;
    }
 
    loadSprites(spriteSheet){
@@ -44,12 +45,12 @@ export class Player{
       this.sprite.play();
    }
 
-   tint(){
+   setTransparency(){
       this.sprite.alpha = 0.4;
-      // this.sprite.tint = 0xf22059;
    }
 
    update(){
+      if(this.dead) { return; } 
       let newXPosition = this.sprite.x + this.vx;
       if(newXPosition > this.bounds.left && newXPosition < this.bounds.right){
          this.sprite.x = newXPosition;
@@ -113,6 +114,7 @@ export class Player{
 
    destroy() {
       this.parentContainer.removeChild(this.playerContainer);
+      this.playerContainer.destroy({childred: true});
    }
 
    constrain(n, low, high){
@@ -124,7 +126,7 @@ export class Player{
    }
 
    switchToSprite(key){
-      if(this.sprite.id == key) { return; }
+      if(this.sprite.id == key || this.dead) { return; }
       this.sprite.stop();
       this.sprite.visible = false;
       this.previous = this.sprite;
@@ -137,8 +139,14 @@ export class Player{
       this.sprite.play();
    }
 
-   stop(){
+   die(){
       this.switchToSprite('hit');
+      this.dead = true;
+   }
+
+   dieAndTint(){
+      this.die();
+      this.sprite.tint = 0xf22059;
    }
 
    get position() {

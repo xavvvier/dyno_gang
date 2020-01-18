@@ -43,6 +43,7 @@ export class Game{
       this.socket = new Socket("/socket", {params: {token: window.userToken}})
       this.socket.connect()
       this.score = 0;
+      this.gameOver = false;
    }
 
    setup(){
@@ -71,6 +72,7 @@ export class Game{
       this.channel.on('obstacle_event', data => {this.onNewObstacle(data);})
       this.channel.on('player_joined', data => {this.onPlayerJoin(data);})
       this.channel.on('player_left', data => {this.onPlayerLeave(data);})
+      this.channel.on('player_dead', data => {this.onPlayerDead(data);})
       this.player.onJumpFinished = () => { this.sendKey('up.release') };
       this.gameLoop();
    }
@@ -78,7 +80,9 @@ export class Game{
    onConnected(resp){
      //render the players already playing
      for(const player in resp.players) {
-        this.onPlayerJoin(resp.players[player]);
+        if(resp.players[player].alive){
+           this.onPlayerJoin(resp.players[player]);
+        }
      }
    }
 
@@ -112,7 +116,7 @@ export class Game{
    onPlayerJoin(data) {
       let playerSprite = loader.resources[Assets.player].spritesheet;
       let player = new Player(playerSprite, this.otherPlayersContainer, this.options); 
-      player.tint();
+      player.setTransparency();
       this.players[data.name] = player;
       //If the player doesn't have a x position, this means someone else joined the game
       //the user will be located in the initial default position. 
@@ -125,6 +129,12 @@ export class Game{
    onPlayerLeave(data) {
       this.players[data.name].destroy();
       delete this.players[data.name];
+   }
+
+   onPlayerDead(data) {
+      if(data.name in this.players){
+         this.players[data.name].dieAndTint();
+      }
    }
 
    gameAction(movements) {
@@ -159,10 +169,25 @@ export class Game{
       for(const remotePlayer in this.players){
          this.players[remotePlayer].update();
       }
-      let collision = false;
       for(const obs of this.obstacles){
          //Move the obstacle
          obs.x -= 3;
+         //Remove the obstacle if it's off screen
+         if(obs.x < 0 - obs.width){
+            this.container.removeChild(obs);
+            this.obstacles.splice(this.obstacles.indexOf(obs), 1);
+            obs.destroy();
+         }
+      }
+      if(!this.gameOver) {
+         this.detectCollision();
+      }
+      requestAnimationFrame(() => this.gameLoop());
+   }
+
+   detectCollision(){
+      let collision = false;
+      for(const obs of this.obstacles){
          //detect collision
          let obsBounds = obs.getBounds();
          let playerBounds = this.player.sprite.getBounds();
@@ -175,26 +200,20 @@ export class Game{
                this.score += (10 + extraScore);
                obs.counted = true;
                document.getElementById('score').innerText = this.score;
-               this.sendKey("");
+               // this.sendKey("");
             }
-         }
-         //Remove the obstacle if it's off screen
-         if(obs.x < 0 - obs.width){
-            this.container.removeChild(obs);
-            this.obstacles.splice(this.obstacles.indexOf(obs), 1);
-            obs.destroy();
          }
       }
       if (collision) {
+         this.gameOver = true;
          document.body.appendChild(document.createTextNode('GAME OVER'));
-         // this.channel.push("game_over", {user: window.userToken});
-         this.player.stop();
-      } else {
-         requestAnimationFrame(() => this.gameLoop());
-      }
+         this.channel.push("die", {});
+         this.player.die();
+      } 
    }
 
    sendKey(key){
+      if(this.gameOver) { return; }
       //Send the key action to be processed and broadcasted by the server
       this.channel.push("action", {key: key, x: this.player.position.x, score: this.score });
    }

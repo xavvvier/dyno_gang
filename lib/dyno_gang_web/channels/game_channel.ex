@@ -26,6 +26,13 @@ defmodule DynoGangWeb.GameChannel do
     {:noreply, socket}
   end
 
+  def handle_in("die", _ , socket) do
+    player_name = Map.get(socket.assigns, :user_id)
+    state = GameServer.player_dead(player_name)
+    broadcast!(socket, "player_dead", %{name: player_name})
+    {:noreply, socket}
+  end
+
   #Message generated at intervals in GameServer to broadcast obstacle events
   def handle_info(%Broadcast{event: event, payload: payload}, socket) do
     push(socket, event, payload)
