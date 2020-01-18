@@ -132,11 +132,14 @@ export class Game{
       //Move local player
       this.player.move(player_move)
       //Move remote players
+      let othersScore = "";
       for(const player_name in movements) {
          if(player_name !== window.userToken){
             this.players[player_name].move(movements[player_name]);
+            othersScore += player_name + ": " + movements[player_name].score + "<br>";
          }
       }
+      document.getElementById('others').innerHTML = othersScore;
    }
 
    collide(r1, r2) {
@@ -172,6 +175,7 @@ export class Game{
                this.score += (10 + extraScore);
                obs.counted = true;
                document.getElementById('score').innerText = this.score;
+               this.sendKey("");
             }
          }
          //Remove the obstacle if it's off screen
@@ -183,6 +187,7 @@ export class Game{
       }
       if (collision) {
          document.body.appendChild(document.createTextNode('GAME OVER'));
+         // this.channel.push("game_over", {user: window.userToken});
          this.player.stop();
       } else {
          requestAnimationFrame(() => this.gameLoop());
@@ -191,7 +196,7 @@ export class Game{
 
    sendKey(key){
       //Send the key action to be processed and broadcasted by the server
-      this.channel.push("action", {key: key, x: this.player.position.x });
+      this.channel.push("action", {key: key, x: this.player.position.x, score: this.score });
    }
 
 }

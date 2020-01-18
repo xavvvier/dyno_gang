@@ -15,8 +15,8 @@ defmodule DynoGangWeb.GameServer do
     GenServer.call(:game_server, {:add_player, player})
   end
 
-  def player_move(player_name, move, x) do
-    GenServer.call(:game_server, {:player_move, player_name, move, x})
+  def player_move(player_name, move, x, score) do
+    GenServer.call(:game_server, {:player_move, player_name, move, x, score})
   end
 
   def remove_player(player) do
@@ -52,20 +52,20 @@ defmodule DynoGangWeb.GameServer do
     {:noreply, new_state}
   end
 
-  def handle_call({:player_move, player_name, key, x}, _from, state) do
+  def handle_call({:player_move, player_name, key, x, score}, _from, state) do
     #get the player state
     player_state = Map.get(state.players, player_name)
     #update the game state
     state = %{state | 
       players: Map.put(state.players, player_name, 
-        Player.move(player_state, key, x)) 
+        Player.move(player_state, key, x, score)) 
     }
     {:reply, state, state}
   end
 
   def handle_info(:obstable_generator, state)  do
-    obstable_type = :random.uniform(4) 
-    Endpoint.broadcast!("obstacle:all", "obstacle_event", %{type: obstable_type})
+    obstacle_type = :random.uniform(4) 
+    Endpoint.broadcast!("obstacle:all", "obstacle_event", %{type: obstacle_type})
     {:noreply, state}
   end
   

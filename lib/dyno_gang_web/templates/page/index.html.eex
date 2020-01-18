@@ -6,3 +6,6 @@
 <div>
    Score: <span id="score">0</span>
 </div>
+<div id="others">
+   
+</div>

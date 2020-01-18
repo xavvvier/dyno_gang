@@ -19,9 +19,9 @@ defmodule DynoGangWeb.GameChannel do
     {:error, %{error: "unauthorized"}}
   end
 
-  def handle_in("action", %{"key" => key, "x" => x}, socket) do
+  def handle_in("action", %{"key" => key, "x" => x, "score" => score}, socket) do
     player_name = Map.get(socket.assigns, :user_id)
-    state = GameServer.player_move(player_name, key, x)
+    state = GameServer.player_move(player_name, key, x, score)
     broadcast!(socket, "player_move", %{response: state})
     {:noreply, socket}
   end

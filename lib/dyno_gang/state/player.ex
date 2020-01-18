@@ -7,8 +7,8 @@ defmodule DynoGang.State.Player do
 
   alias DynoGang.State.Player
 
-  def move(%Player{} = player, move, x) do
-    %{player | move: move, x: x}
+  def move(%Player{} = player, move, x, score) do
+    %{player | move: move, x: x, score: score}
   end
 
 end
