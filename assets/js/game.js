@@ -43,7 +43,7 @@ export class Game{
       this.socket = new Socket("/socket", {params: {token: window.userToken}})
       this.socket.connect()
       this.score = 0;
-      this.gameOver = false;
+      this.isGameOver = false;
    }
 
    setup(){
@@ -74,7 +74,37 @@ export class Game{
       this.channel.on('player_left', data => {this.onPlayerLeave(data);})
       this.channel.on('player_dead', data => {this.onPlayerDead(data);})
       this.player.onJumpFinished = () => { this.sendKey('up.release') };
+      this.drawScore();
       this.gameLoop();
+   }
+
+   drawScore(){
+      let opts = {
+         fontFamily: 'pixellari',
+         fontSize: 20,
+         fill: ['#ffffff', '#00ff99'],
+         dropShadow: true,
+         dropShadowColor: '#000000',
+         dropShadowBlur: 4,
+         dropShadowAngle: Math.PI / 6,
+         dropShadowDistance: 6,
+         align: 'right'
+      };
+      this.scoreText = new PIXI.Text(this.score, opts);
+      this.scoreText.x = 30;
+      this.scoreText.y = 30;
+      this.container.addChild(this.scoreText);
+      opts = {
+         fontFamily: 'pixellari',
+         fontSize: 15,
+         fill: ['#ffffff', '#82c4ec'],
+         align: 'right',
+      };
+      this.othersScoreText = new PIXI.Text("", opts);
+      this.othersScoreText.anchor.set(1,0);
+      this.othersScoreText.x = this.options.width - 10;
+      this.othersScoreText.y = 30;
+      this.container.addChild(this.othersScoreText);
    }
 
    onConnected(resp){
@@ -127,8 +157,10 @@ export class Game{
    }
 
    onPlayerLeave(data) {
-      this.players[data.name].destroy();
-      delete this.players[data.name];
+      if(data.name in this.players){
+         this.players[data.name].destroy();
+         delete this.players[data.name];
+      }
    }
 
    onPlayerDead(data) {
@@ -138,18 +170,22 @@ export class Game{
    }
 
    gameAction(movements) {
+      if(this.isGameOver){ return;}
       let player_move = movements[window.userToken];
       //Move local player
       this.player.move(player_move)
-      //Move remote players
-      let othersScore = "";
+      //Move remote players and update score
+      let scores = [];
       for(const player_name in movements) {
-         if(player_name !== window.userToken){
+         if(player_name !== window.userToken && player_name in this.players){
             this.players[player_name].move(movements[player_name]);
-            othersScore += player_name + ": " + movements[player_name].score + "<br>";
+            scores.push(movements[player_name]);
          }
       }
-      document.getElementById('others').innerHTML = othersScore;
+      //update score
+      scores.sort((a, b) => b.score - a.score);
+      let othersScore = scores.map(s => s.name + ": " + s.score + "\n").join('');
+      this.othersScoreText.text = othersScore;
    }
 
    collide(r1, r2) {
@@ -169,18 +205,26 @@ export class Game{
       for(const remotePlayer in this.players){
          this.players[remotePlayer].update();
       }
-      for(const obs of this.obstacles){
-         //Move the obstacle
-         obs.x -= 3;
-         //Remove the obstacle if it's off screen
-         if(obs.x < 0 - obs.width){
-            this.container.removeChild(obs);
-            this.obstacles.splice(this.obstacles.indexOf(obs), 1);
-            obs.destroy();
+      if(!this.isGameOver) {
+         for(const obs of this.obstacles){
+            //Move the obstacle
+            obs.x -= 3;
+            //Remove the obstacle if it's off screen
+            if(obs.x < 0 - obs.width){
+               this.container.removeChild(obs);
+               this.obstacles.splice(this.obstacles.indexOf(obs), 1);
+               obs.destroy();
+            }
          }
-      }
-      if(!this.gameOver) {
          this.detectCollision();
+      } else {
+         //Move score text
+         if(this.scoreText.steps){
+            this.scoreText.x += this.scoreText.vx;
+            this.scoreText.y += this.scoreText.vy;
+            this.scoreText.style.fontSize += this.scoreText.vfs;
+            this.scoreText.steps -= 1;
+         }
       }
       requestAnimationFrame(() => this.gameLoop());
    }
@@ -193,27 +237,43 @@ export class Game{
          let playerBounds = this.player.sprite.getBounds();
          if (this.collide(obsBounds, playerBounds)){
             collision = true;
-         } else {
+            break;
+         } else if(!obs.counted && obsBounds.x + obs.width < playerBounds.x + 1) {
             //Score if the user overcomes the obstacle
-            if(!obs.counted && obsBounds.x + obs.width < playerBounds.x + 1) {
-               let extraScore = Math.round(obsBounds.x/this.options.width*2) * 5;
-               this.score += (10 + extraScore);
-               obs.counted = true;
-               document.getElementById('score').innerText = this.score;
-               // this.sendKey("");
-            }
+            let extraScore = Math.round(obsBounds.x/this.options.width*2) * 5;
+            this.score += (10 + extraScore);
+            this.scoreText.text = this.score;
+            obs.counted = true;
          }
       }
       if (collision) {
-         this.gameOver = true;
-         document.body.appendChild(document.createTextNode('GAME OVER'));
-         this.channel.push("die", {});
-         this.player.die();
+         this.gameOver();
       } 
    }
 
+   gameOver(){
+      this.isGameOver = true;
+      this.channel.push("die", {});
+      this.player.die();
+      //Disconnect form channel
+      this.channel.leave();
+      //Set vx,vy and vfs to animate the scoreText to the center of screen
+      let targetPosition = {x: this.options.width/2, y: this.options.height/2};
+      let steps = this.scoreText.steps = 20;
+      this.scoreText.vx = (targetPosition.x - this.scoreText.x)/steps;
+      this.scoreText.vy = (targetPosition.y - this.scoreText.y)/steps;
+      let fontSizeTarget = 50;
+      this.scoreText.vfs = (fontSizeTarget - this.scoreText.style.fontSize)/steps;
+      this.scoreText.anchor.set(0.5);
+      this.scoreText.style.align = 'center';
+      for(const player in this.players){
+         this.players[player].destroy();
+         delete this.players[player];
+      }
+   }
+
    sendKey(key){
-      if(this.gameOver) { return; }
+      if(this.isGameOver) { return; }
       //Send the key action to be processed and broadcasted by the server
       this.channel.push("action", {key: key, x: this.player.position.x, score: this.score });
    }

@@ -31,7 +31,7 @@ defmodule DynoGangWeb.GameServer do
 
   def init(state) do
     IO.puts("Game server started")
-    :timer.send_interval(3000, :obstable_generator)
+    :timer.send_after(3000, :obstable_generator)
     {:ok, state}
   end
 
@@ -79,6 +79,10 @@ defmodule DynoGangWeb.GameServer do
 
   def handle_info(:obstable_generator, state)  do
     obstacle_type = :random.uniform(4) 
+    min = 1500
+    max = 2800
+    next_wait = floor(:random.uniform() * (max-min) + min)
+    :timer.send_after(next_wait, :obstable_generator)
     Endpoint.broadcast!("obstacle:all", "obstacle_event", %{type: obstacle_type})
     {:noreply, state}
   end
