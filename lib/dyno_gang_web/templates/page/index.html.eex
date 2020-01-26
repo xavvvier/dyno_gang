@@ -1,5 +1,34 @@
 <script>window.userToken = "<%= assigns[:user_token] %>";</script>
+<%= csrf_meta_tag() %>
 <div class="flex-container">
    <div id="game"></div>
 </div>
-<span class="hidden">sample text</span>
+<form id="userInput" @submit.prevent="validate" v-show="visible">
+   <label for="name">Username:</label>
+   <input type="text" autofocus v-model="username" placehoder="Enter your username" id="username">
+   <div class="user-characters">
+       <div class="user-character" tabindex="0" @focus="selected='virtualguy'" v-bind:class="{ selected: selected=='virtualguy'}">
+          <img v-show="selected=='virtualguy'" src="images/virtualguy.gif" alt="virtual guy">  
+          <span v-show="selected!='virtualguy'" class="virtualguy"></span>
+          <label>virtual guy</label>
+       </div>
+       <div class="user-character" tabindex="0" @focus="selected='pinkman'" v-bind:class="{ selected: selected=='pinkman'}">
+          <img v-show="selected=='pinkman'" src="images/pinkman.gif" alt="pink man">  
+          <span v-show="selected!='pinkman'" class="pinkman"></span>
+          <label>pink man</label>
+       </div>
+       <div class="user-character" tabindex="0" @focus="selected='ninjafrog'" v-bind:class="{ selected: selected=='ninjafrog'}">
+          <img v-show="selected=='ninjafrog'" src="images/ninjafrog.gif" alt="ninja frog">  
+          <span v-show="selected!='ninjafrog'" class="ninjafrog"></span>
+          <label>ninja frog</label>
+       </div>
+       <div class="user-character" tabindex="0" @focus="selected='maskdude'" v-bind:class="{ selected: selected=='maskdude'}">
+          <img v-show="selected=='maskdude'" src="images/maskdude.gif" alt="mask dude">  
+          <span v-show="selected!='maskdude'" class="maskdude"></span>
+          <label>mask dude</label>
+       </div>
+       <div>
+          <button type="submit">Go</button> <span class="error">{{error}}</span>
+       </div>
+    </div>
+</form>

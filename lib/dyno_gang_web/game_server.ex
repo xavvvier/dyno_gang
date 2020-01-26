@@ -11,8 +11,8 @@ defmodule DynoGangWeb.GameServer do
     GenServer.start(__MODULE__, %Game{}, name: :game_server)
   end
 
-  def add_player(player) do
-    GenServer.call(:game_server, {:add_player, player})
+  def add_player(player, character) do
+    GenServer.call(:game_server, {:add_player, player, character})
   end
 
   def player_move(player_name, move, x, score) do
@@ -27,6 +27,10 @@ defmodule DynoGangWeb.GameServer do
     GenServer.call(:game_server, {:die, player})
   end
 
+  def player_names() do
+    GenServer.call(:game_server, {:player_names})
+  end
+
   #Server
 
   def init(state) do
@@ -35,15 +39,15 @@ defmodule DynoGangWeb.GameServer do
     {:ok, state}
   end
 
-  def handle_call({:add_player, player}, _from, state) do
+  def handle_call({:add_player, player, character}, _from, state) do
     current_players = state.players
     #create a new player state
-    player_state = %Player{name: player} 
+    IO.inspect(player, label: "adding player")
+    player_state = %Player{name: player, character: character} 
     new_state = %{state | 
       players: Map.put(state.players, player, player_state)
     }
     Endpoint.broadcast!("obstacle:all", "player_joined", player_state)
-    IO.inspect(player, label: "player joined")
     {:reply, current_players, new_state}
   end
 
@@ -52,7 +56,9 @@ defmodule DynoGangWeb.GameServer do
       players: Map.delete(state.players, player)
     }
     Endpoint.broadcast!("obstacle:all", "player_left", %{name: player})
-    IO.inspect(player, label: "player left")
+    player_names = Game.player_names(new_state)
+    IO.inspect(player, label: "removed player")
+    IO.inspect(player_names, label: "players in room")
     {:noreply, new_state}
   end
 
@@ -75,6 +81,12 @@ defmodule DynoGangWeb.GameServer do
       players: Map.put(state.players, player_name, Player.die(player_state)) 
     }
     {:reply, state, state}
+  end
+
+  def handle_call({:player_names}, _from, state) do
+    #get the player names
+    player_names = Game.player_names(state)
+    {:reply, player_names, state}
   end
 
   def handle_info(:obstable_generator, state)  do

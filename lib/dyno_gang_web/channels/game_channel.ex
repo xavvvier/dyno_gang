@@ -5,11 +5,11 @@ defmodule DynoGangWeb.GameChannel do
   alias DynoGangWeb.Endpoint
   alias Phoenix.Socket.Broadcast
 
-  def join("game:all", _message, socket) do
+  def join("game:all", %{"character" => character}, socket) do
     #Prepare a list of current players to send
     #Add the player to the game state
     player_name = Map.get(socket.assigns, :user_id)
-    current_players = GameServer.add_player(player_name)
+    current_players = GameServer.add_player(player_name, character)
     #Subscribe to the obstacle topic
     Endpoint.subscribe("obstacle:all")
     {:ok, %{players: current_players}, socket}

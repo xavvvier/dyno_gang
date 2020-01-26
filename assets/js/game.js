@@ -8,7 +8,10 @@ let Application = PIXI.Application,
    Sprite = PIXI.Sprite,
    loader = PIXI.Loader.shared,
    Assets = {
-      player: "images/virtualguy.json",
+      virtualguy: "images/virtualguy.json",
+      ninjafrog: "images/ninjafrog.json",
+      maskdude: "images/maskdude.json",
+      pinkman: "images/pinkman.json",
       background: "images/backgrounds/stars_blue.png",
       obstacle1: "images/fan.json",
       obstacle2: "images/fire.json",
@@ -19,9 +22,11 @@ let Application = PIXI.Application,
 export class Game{
 
 
-   constructor(domElement, options){
+   constructor(domElement, options, username, character){
       this.domElement = domElement;
       this.options = options;
+      this.username = username;
+      this.character = character;
       this.init();
    }
 
@@ -32,7 +37,10 @@ export class Game{
       this.domElement.appendChild(this.app.view);
       //Load assets
       loader.add([
-         Assets.player,
+         Assets.virtualguy,
+         Assets.ninjafrog,
+         Assets.maskdude,
+         Assets.pinkman,
          Assets.background,
          Assets.obstacle1,
          Assets.obstacle2,
@@ -47,11 +55,11 @@ export class Game{
    }
 
    setup(){
-      this.channel = this.socket.channel("game:all", {})
+      this.channel = this.socket.channel("game:all", {character: this.character})
       this.channel.join()
         .receive("ok", resp => this.onConnected(resp)) 
         .receive("error", resp => console.log("Unable to join", resp))
-      let playerSprite = loader.resources[Assets.player].spritesheet;
+      let playerSprite = loader.resources[Assets[this.character]].spritesheet;
       let bgTexture = loader.resources[Assets.background].texture;
       //Contains all the other players
       //adding this container first will put other players behind the local player
@@ -144,7 +152,7 @@ export class Game{
    }
 
    onPlayerJoin(data) {
-      let playerSprite = loader.resources[Assets.player].spritesheet;
+      let playerSprite = loader.resources[Assets[data.character]].spritesheet;
       let player = new Player(playerSprite, this.otherPlayersContainer, this.options); 
       player.setTransparency();
       this.players[data.name] = player;
@@ -171,13 +179,13 @@ export class Game{
 
    gameAction(movements) {
       if(this.isGameOver){ return;}
-      let player_move = movements[window.userToken];
+      let player_move = movements[this.username];
       //Move local player
       this.player.move(player_move)
       //Move remote players and update score
       let scores = [];
       for(const player_name in movements) {
-         if(player_name !== window.userToken && player_name in this.players){
+         if(player_name !== this.username && player_name in this.players){
             this.players[player_name].move(movements[player_name]);
             scores.push(movements[player_name]);
          }
