@@ -82,6 +82,9 @@ export class Player{
          }else{
             this.switchToSprite("idle");
          }
+      } else if(this.vy >0) {
+         //check if it is going down to change the animation (vy is positive)
+         this.switchToSprite("fall");
       }
    }
 
