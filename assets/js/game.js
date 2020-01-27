@@ -13,6 +13,7 @@ let Application = PIXI.Application,
       maskdude: "images/maskdude.json",
       pinkman: "images/pinkman.json",
       background: "images/backgrounds/stars_blue.png",
+      floor: "images/floor.png",
       obstacle1: "images/fan.json",
       obstacle2: "images/fire.json",
       obstacle3: "images/rockhead.json",
@@ -42,6 +43,7 @@ export class Game{
          Assets.maskdude,
          Assets.pinkman,
          Assets.background,
+         Assets.floor,
          Assets.obstacle1,
          Assets.obstacle2,
          Assets.obstacle3,
@@ -59,6 +61,7 @@ export class Game{
         .receive("error", resp => console.log("Unable to join", resp))
       let playerSprite = loader.resources[Assets[this.character]].spritesheet;
       let bgTexture = loader.resources[Assets.background].texture;
+      let floorTexture = loader.resources[Assets.floor].texture;
       //Contains all the other players
       //adding this container first will put other players behind the local player
       //(added after setup initialization)
@@ -67,7 +70,11 @@ export class Game{
       this.container = new Container();
       this.app.stage.addChild(this.container);
       this.bgSprite = new PIXI.TilingSprite(bgTexture, this.options.width, this.options.height);
+      this.floorSprite = new PIXI.TilingSprite(floorTexture, this.options.width, 47);
+      this.floorSprite.anchor.set(0,1);
+      this.floorSprite.y = this.options.height;
       this.container.addChild(this.bgSprite);
+      this.container.addChild(this.floorSprite);
       this.container.addChild(this.otherPlayersContainer);
       this.player = new Player(playerSprite, this.container, this.options);
       this.resetGameState();
@@ -176,7 +183,7 @@ export class Game{
       let obstacle = new PIXI.AnimatedSprite(spritesheet.animations.default);
       obstacle.animationSpeed = 0.1;
       obstacle.anchor.set(0.5, 1);
-      obstacle.y = this.options.height - 20;
+      obstacle.y = this.options.height - 50;
       obstacle.x = this.options.width + obstacle.width;
       this.container.addChild(obstacle);
       this.obstacles.push(obstacle);
@@ -245,6 +252,7 @@ export class Game{
 
    gameLoop(){
       this.bgSprite.tilePosition.x -= 0.5;
+      this.floorSprite.tilePosition.x -= 0.8;
       if(!this.isGameOver) {
         this.player.update();
         for(const remotePlayer in this.players){

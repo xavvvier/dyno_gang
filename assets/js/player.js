@@ -3,14 +3,14 @@ export class Player{
    constructor(spriteSheet, container, options) {
       this.spriteSheet = spriteSheet;
       this.sprites = {};
-      let border = 20;
+      let gap = 20;
       this.speed = 2;
       this.gravity = 0.3;
       this.bounds = {
-         top: border,
-         left: border,
-         bottom: options.height - border,
-         right: options.width - border
+         top: gap,
+         left: gap,
+         bottom: options.height - 50,
+         right: options.width - gap
       };
       this.parentContainer = container;
       this.playerContainer = new PIXI.Container();
@@ -47,7 +47,7 @@ export class Player{
       this.switchToSprite('idle');
       this.sprite.visible = true;
       this.sprite.y = this.bounds.bottom - this.sprite.height/2;
-      this.sprite.x = 80;
+      this.sprite.x = 90;
       this.sprite.play();
       this.dead = false;
    }
