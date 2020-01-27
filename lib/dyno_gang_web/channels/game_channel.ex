@@ -5,14 +5,21 @@ defmodule DynoGangWeb.GameChannel do
   alias DynoGangWeb.Endpoint
   alias Phoenix.Socket.Broadcast
 
+  @maximum_players 8
+
   def join("game:all", %{"character" => character}, socket) do
     #Prepare a list of current players to send
     #Add the player to the game state
     player_name = Map.get(socket.assigns, :user_id)
     current_players = GameServer.player_join(player_name, character)
-    #Subscribe to the obstacle topic
-    Endpoint.subscribe("obstacle:all")
-    {:ok, %{players: current_players}, socket}
+    case Enum.count(current_players) do
+      x when x >= @maximum_players -> 
+        {:error,%{error: "Maximum players reached"}, socket}
+      _ ->
+        #Subscribe to the obstacle topic
+        Endpoint.subscribe("obstacle:all")
+        {:ok, %{players: current_players}, socket}
+    end
   end
   
   def join("game:" <> _private_room, _message, _socket) do

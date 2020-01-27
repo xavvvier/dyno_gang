@@ -55,7 +55,7 @@ var vueApp = new Vue({
                this.up.unsubscribe();
                this.down.unsubscribe();
             } else {
-               this.error = 'Name already taken';
+               this.error = response.data.error;
             }
          }).catch(err => {
             //If the csrf token is expired, a refresh might help
