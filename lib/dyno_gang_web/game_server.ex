@@ -11,8 +11,8 @@ defmodule DynoGangWeb.GameServer do
     GenServer.start(__MODULE__, %Game{}, name: :game_server)
   end
 
-  def add_player(player, character) do
-    GenServer.call(:game_server, {:add_player, player, character})
+  def player_join(player, character) do
+    GenServer.call(:game_server, {:player_join, player, character})
   end
 
   def player_move(player_name, move, x, score) do
@@ -39,7 +39,7 @@ defmodule DynoGangWeb.GameServer do
     {:ok, state}
   end
 
-  def handle_call({:add_player, player, character}, _from, state) do
+  def handle_call({:player_join, player, character}, _from, state) do
     current_players = state.players
     #create a new player state
     IO.inspect(player, label: "adding player")

@@ -3,7 +3,7 @@
 <div class="flex-container">
    <div id="game"></div>
 </div>
-<form id="userInput" @submit.prevent="validate" v-show="visible">
+<form id="userInput" @submit.prevent="validate" v-show="visible" v-cloak>
    <label for="name">Username:</label>
    <input type="text" autofocus v-model="username" placehoder="Enter your username" id="username">
    <div class="user-characters">

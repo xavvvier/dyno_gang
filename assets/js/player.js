@@ -5,10 +5,7 @@ export class Player{
       this.sprites = {};
       let border = 20;
       this.speed = 2;
-      this.jumping = false;
       this.gravity = 0.3;
-      this.vy = 0;
-      this.vx = 0;
       this.bounds = {
          top: border,
          left: border,
@@ -28,6 +25,7 @@ export class Player{
    loadSprites(spriteSheet){
       let animations = ['idle', 'run', 'walljump', 'hit', 'jump', 'fall', 'doublejump'];
       for (var anim of animations) {
+         //Create the pixi animated sprite for each animation
          this.sprites[anim] = new PIXI.AnimatedSprite(
             spriteSheet.animations[anim]
          );
@@ -37,12 +35,21 @@ export class Player{
          this.sprites[anim].animationSpeed = 0.3;
          this.playerContainer.addChild(this.sprites[anim]);
       }
-      //Create the pixi animated sprite
       this.sprite = this.sprites['idle'];
+      this.setInitialState();
+   }
+
+   setInitialState() {
+      this.vy = 0;
+      this.vx = 0;
+      this.jumping = false;
+      //Load the default animation
+      this.switchToSprite('idle');
       this.sprite.visible = true;
       this.sprite.y = this.bounds.bottom - this.sprite.height/2;
       this.sprite.x = 80;
       this.sprite.play();
+      this.dead = false;
    }
 
    setTransparency(){

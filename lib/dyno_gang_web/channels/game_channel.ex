@@ -9,7 +9,7 @@ defmodule DynoGangWeb.GameChannel do
     #Prepare a list of current players to send
     #Add the player to the game state
     player_name = Map.get(socket.assigns, :user_id)
-    current_players = GameServer.add_player(player_name, character)
+    current_players = GameServer.player_join(player_name, character)
     #Subscribe to the obstacle topic
     Endpoint.subscribe("obstacle:all")
     {:ok, %{players: current_players}, socket}
@@ -31,6 +31,12 @@ defmodule DynoGangWeb.GameChannel do
     state = GameServer.player_dead(player_name)
     broadcast!(socket, "player_dead", %{name: player_name})
     {:noreply, socket}
+  end
+
+  def handle_in("rejoin", %{"character" => character}, socket) do
+    player_name = Map.get(socket.assigns, :user_id)
+    current_players = GameServer.player_join(player_name, character)
+    {:reply, {:ok, %{players: current_players}}, socket}
   end
 
   #Message generated at intervals in GameServer to broadcast obstacle events

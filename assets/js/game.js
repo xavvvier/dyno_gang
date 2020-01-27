@@ -50,8 +50,6 @@ export class Game{
       //Create the socket and connect to it
       this.socket = new Socket("/socket", {params: {token: window.userToken}})
       this.socket.connect()
-      this.score = 0;
-      this.isGameOver = false;
    }
 
    setup(){
@@ -72,18 +70,51 @@ export class Game{
       this.container.addChild(this.bgSprite);
       this.container.addChild(this.otherPlayersContainer);
       this.player = new Player(playerSprite, this.container, this.options);
-      this.players = {};
-      this.obstacles = [];
+      this.resetGameState();
       this.keyBindings();
-      //Update the player based on the data received from the server
+      this.player.onJumpFinished = () => { this.sendKey('up.release') };
+      this.channelSubscribe();
+      this.gameLoop();
+   }
+
+   resetGameState(){
+      this.score = 0;
+      this.isGameOver = false;
+      this.players = {};
+      //If there is previous obstacle (reset) remove them all
+      if(this.obstacles){
+        for(const obs of this.obstacles){
+            this.container.removeChild(obs);
+        }
+      }
+      this.obstacles = [];
+      //Remove previous score texts
+      if(this.scoreText) {
+          this.container.removeChild(this.scoreText);
+          this.container.removeChild(this.othersScoreText);
+      }
+      if(this.gameResetText){
+          this.container.removeChild(this.gameResetText);
+      }
+      this.drawScore();
+   }
+
+   channelSubscribe(){
+      //Suscribe to channel events
       this.channel.on('player_move', data => { this.gameAction(data.response.players) })
       this.channel.on('obstacle_event', data => {this.onNewObstacle(data);})
       this.channel.on('player_joined', data => {this.onPlayerJoin(data);})
       this.channel.on('player_left', data => {this.onPlayerLeave(data);})
       this.channel.on('player_dead', data => {this.onPlayerDead(data);})
-      this.player.onJumpFinished = () => { this.sendKey('up.release') };
-      this.drawScore();
-      this.gameLoop();
+   }
+  
+   channelUnsubscribe(){
+      //Unsuscribe from channel when no longer required (ie Game Over)
+      this.channel.off('player_move');
+      this.channel.off('obstacle_event');
+      this.channel.off('player_joined');
+      this.channel.off('player_left');
+      this.channel.off('player_dead');
    }
 
    drawScore(){
@@ -128,13 +159,14 @@ export class Game{
       //Key binding
       let left = keyboard("ArrowLeft"),
          right = keyboard("ArrowRight"),
+         enter = keyboard("Enter"),
          up = keyboard("ArrowUp");
+      enter.press = () => { this.restart();};
       up.press = () => { this.sendKey('up.press'); };
       right.press = () => { this.sendKey('right.press') }
       right.release = () => { this.sendKey('right.release') }
       left.press = () => { this.sendKey('left.press') }
       left.release = () => { this.sendKey('left.release') }
-
    }
 
    onNewObstacle(data) {
@@ -152,6 +184,7 @@ export class Game{
    }
 
    onPlayerJoin(data) {
+      if(data.name == this.username) {return;}
       let playerSprite = loader.resources[Assets[data.character]].spritesheet;
       let player = new Player(playerSprite, this.otherPlayersContainer, this.options); 
       player.setTransparency();
@@ -173,7 +206,10 @@ export class Game{
 
    onPlayerDead(data) {
       if(data.name in this.players){
-         this.players[data.name].dieAndTint();
+        //get reference of that player
+         let player = this.players[data.name]
+         player.dieAndTint();
+         setTimeout(function() { player.destroy(); }, 1000);
       }
    }
 
@@ -209,22 +245,22 @@ export class Game{
 
    gameLoop(){
       this.bgSprite.tilePosition.x -= 0.5;
-      this.player.update();
-      for(const remotePlayer in this.players){
-         this.players[remotePlayer].update();
-      }
       if(!this.isGameOver) {
-         for(const obs of this.obstacles){
-            //Move the obstacle
-            obs.x -= 3;
-            //Remove the obstacle if it's off screen
-            if(obs.x < 0 - obs.width){
-               this.container.removeChild(obs);
-               this.obstacles.splice(this.obstacles.indexOf(obs), 1);
-               obs.destroy();
-            }
-         }
-         this.detectCollision();
+        this.player.update();
+        for(const remotePlayer in this.players){
+          this.players[remotePlayer].update();
+        }
+        for(const obs of this.obstacles){
+          //Move the obstacle
+          obs.x -= 3;
+          //Remove the obstacle if it's off screen
+          if(obs.x < 0 - obs.width){
+            this.container.removeChild(obs);
+            this.obstacles.splice(this.obstacles.indexOf(obs), 1);
+            obs.destroy();
+          }
+        }
+        this.detectCollision();
       } else {
          //Move score text
          if(this.scoreText.steps){
@@ -263,8 +299,7 @@ export class Game{
       this.isGameOver = true;
       this.channel.push("die", {});
       this.player.die();
-      //Disconnect form channel
-      this.channel.leave();
+      this.channelUnsubscribe();
       //Set vx,vy and vfs to animate the scoreText to the center of screen
       let targetPosition = {x: this.options.width/2, y: this.options.height/2};
       let steps = this.scoreText.steps = 20;
@@ -278,7 +313,30 @@ export class Game{
          this.players[player].destroy();
          delete this.players[player];
       }
+      this.gameResetText = new PIXI.Text("PRESS ENTER TO RESTART", {
+         fontFamily: 'pixellari',
+         fontSize: 15,
+         fill: ['#ffffff'],
+         align: 'center'
+      });
+      this.gameResetText.anchor.set(0.5);
+      this.gameResetText.x = this.options.width/2;
+      this.gameResetText.y = 300;
+      this.container.addChild(this.gameResetText);
    }
+
+  restart(){
+    if(this.isGameOver){
+      this.channel.push("rejoin", {character: this.character})
+        .receive("ok", (state) => {
+          this.resetGameState();
+          this.player.setInitialState();
+          this.isGameOver = false;
+          this.onConnected(state);
+          this.channelSubscribe();
+        });
+    }
+  }
 
    sendKey(key){
       if(this.isGameOver) { return; }
