@@ -1,8 +1,7 @@
 defmodule DynoGangWeb.GameServer do
   use GenServer
 
-  alias DynoGang.State.Game
-  alias DynoGang.State.Player
+  alias DynoGang.State.{Game, Player, Score}
   alias DynoGangWeb.Endpoint
 
   #Client
@@ -34,9 +33,23 @@ defmodule DynoGangWeb.GameServer do
   #Server
 
   def init(state) do
-    IO.puts("Game server started")
     :timer.send_after(3000, :obstable_generator)
-    {:ok, state}
+    IO.puts("Game server started")
+    {:ok, read_score(state)}
+  end
+
+  defp read_score(state) do
+    #Read the maximum score
+    {:ok, table} = :dets.open_file(:scoring, [])
+    content = :dets.lookup(table, :max) 
+    :dets.close(table)
+    max_score = case content do
+      [max: [name_as_list, value]] ->
+        name = List.to_string(name_as_list) 
+        %Score{username: name, value: value}
+      _ -> nil
+    end
+    %{state| max_score: max_score}
   end
 
   def handle_call({:player_join, player, character}, _from, state) do
@@ -76,10 +89,19 @@ defmodule DynoGangWeb.GameServer do
   def handle_call({:die, player_name}, _from, state) do
     #get the player state
     player_state = Map.get(state.players, player_name)
+    user_score= %Score{username: player_name, value: player_state.score}
     #update the game state
     state = %{state | 
-      players: Map.put(state.players, player_name, Player.die(player_state)) 
+      players: Map.put(state.players, player_name, Player.die(player_state)) ,
+      max_score: Score.max(state.max_score, user_score)
     }
+    #Persist score 
+    if Score.equal?(state.max_score, user_score) do
+      {:ok, table} = :dets.open_file(:scoring, [])
+      :dets.insert(table, {:max, [String.to_charlist(player_name), user_score.value]})
+      :dets.close(table)
+    end
+
     {:reply, state, state}
   end
 

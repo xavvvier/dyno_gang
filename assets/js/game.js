@@ -99,6 +99,7 @@ export class Game{
       if(this.scoreText) {
           this.container.removeChild(this.scoreText);
           this.container.removeChild(this.othersScoreText);
+          this.container.removeChild(this.maxScore);
       }
       if(this.gameResetText){
           this.container.removeChild(this.gameResetText);
@@ -108,7 +109,7 @@ export class Game{
 
    channelSubscribe(){
       //Suscribe to channel events
-      this.channel.on('player_move', data => { this.gameAction(data.response.players) })
+      this.channel.on('player_move', data => { this.gameAction(data.response) })
       this.channel.on('obstacle_event', data => {this.onNewObstacle(data);})
       this.channel.on('player_joined', data => {this.onPlayerJoin(data);})
       this.channel.on('player_left', data => {this.onPlayerLeave(data);})
@@ -149,8 +150,13 @@ export class Game{
       this.othersScoreText = new PIXI.Text("", opts);
       this.othersScoreText.anchor.set(1,0);
       this.othersScoreText.x = this.options.width - 10;
-      this.othersScoreText.y = 30;
+      this.othersScoreText.y = 35;
       this.container.addChild(this.othersScoreText);
+      this.maxScore = new PIXI.Text("", { fontSize: 10, fill: '#ffffff' });
+      this.maxScore.anchor.set(1,0);
+      this.maxScore.y = 10;
+      this.maxScore.x = this.options.width - 10;
+      this.container.addChild(this.maxScore);
    }
 
    onConnected(resp){
@@ -220,7 +226,8 @@ export class Game{
       }
    }
 
-   gameAction(movements) {
+   gameAction(game_state) {
+      let movements = game_state.players;
       if(this.isGameOver){ return;}
       let player_move = movements[this.username];
       //Move local player
@@ -237,6 +244,8 @@ export class Game{
       scores.sort((a, b) => b.score - a.score);
       let othersScore = scores.map(s => s.name + ": " + s.score + "\n").join('');
       this.othersScoreText.text = othersScore;
+      let {username, value} = game_state.max_score;
+      this.maxScore.text = "Record: " + username + " " + value;
    }
 
    collide(r1, r2) {
