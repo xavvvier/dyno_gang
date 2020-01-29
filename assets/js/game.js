@@ -293,14 +293,29 @@ export class Game{
          } else if(!obs.counted && obsBounds.x + obs.width < playerBounds.x + 1) {
             //Score if the user overcomes the obstacle
             let extraScore = Math.round(obsBounds.x/this.options.width*2) * 5;
-            this.score += (10 + extraScore);
+            let newScore = 10 + extraScore;
+            this.score += newScore;
             this.scoreText.text = this.score;
+            this.showTempScore(playerBounds, newScore);
             obs.counted = true;
          }
       }
       if (collision) {
          this.gameOver();
       } 
+   }
+
+   showTempScore(bounds, score) {
+      let opts = {
+         fontFamily: 'pixellari',
+         fontSize: 12,
+         fill: ['#00ff99'],
+      };
+      let tempScore = new PIXI.Text(score, opts);
+      tempScore.x = bounds.x;
+      tempScore.y = bounds.y - 10;
+      this.container.addChild(tempScore);
+      setTimeout(function(){ tempScore.destroy();}, 400);
    }
 
    gameOver(){
