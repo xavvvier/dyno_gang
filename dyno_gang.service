@@ -1,0 +1,21 @@
+# Create link file using
+# ln -s /root/dyno_gang/dyno_gang.service /etc/systemd/system/dyno_gang.service 
+# Control whether service loads on boot
+# sudo systemctl enable dyno_gang.service
+# sudo systemctl restart dyno_gang.service
+
+[Unit]
+Description=Dyno gang phoenix game
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/dyno_gang
+ExecStart=/root/dyno_gang/_build/prod/rel/dyno_gang/bin/dyno_gang start
+ExecStop=/root/dyno_gang/_build/prod/rel/dyno_gang/bin/dyno_gang stop
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
