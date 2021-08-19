@@ -30,3 +30,6 @@ npm-debug.log
 
 #Mac files
 .DS_Store
+
+#Scoring persistance file
+scoring

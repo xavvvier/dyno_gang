@@ -41,11 +41,11 @@ defmodule DynoGangWeb.GameServer do
   defp read_score(state) do
     #Read the maximum score
     {:ok, table} = :dets.open_file(:scoring, [])
-    content = :dets.lookup(table, :max) 
+    content = :dets.lookup(table, :max)
     :dets.close(table)
     max_score = case content do
       [max: [name_as_list, value]] ->
-        name = List.to_string(name_as_list) 
+        name = List.to_string(name_as_list)
         %Score{username: name, value: value}
       _ -> nil
     end
@@ -56,32 +56,21 @@ defmodule DynoGangWeb.GameServer do
     current_players = state.players
     #create a new player state
     IO.inspect(player, label: "adding player")
-    player_state = %Player{name: player, character: character} 
-    new_state = %{state | 
+    player_state = %Player{name: player, character: character}
+    new_state = %{state |
       players: Map.put(state.players, player, player_state)
     }
     Endpoint.broadcast!("obstacle:all", "player_joined", player_state)
     {:reply, current_players, new_state}
   end
 
-  def handle_cast({:remove_player, player}, state) do
-    new_state = %{state | 
-      players: Map.delete(state.players, player)
-    }
-    Endpoint.broadcast!("obstacle:all", "player_left", %{name: player})
-    player_names = Game.player_names(new_state)
-    IO.inspect(player, label: "removed player")
-    IO.inspect(player_names, label: "players in room")
-    {:noreply, new_state}
-  end
-
   def handle_call({:player_move, player_name, key, x, score}, _from, state) do
     #get the player state
     player_state = Map.get(state.players, player_name)
     #update the game state
-    state = %{state | 
-      players: Map.put(state.players, player_name, 
-        Player.move(player_state, key, x, score)) 
+    state = %{state |
+      players: Map.put(state.players, player_name,
+        Player.move(player_state, key, x, score))
     }
     {:reply, state, state}
   end
@@ -91,11 +80,11 @@ defmodule DynoGangWeb.GameServer do
     player_state = Map.get(state.players, player_name)
     user_score= %Score{username: player_name, value: player_state.score}
     #update the game state
-    state = %{state | 
+    state = %{state |
       players: Map.put(state.players, player_name, Player.die(player_state)) ,
       max_score: Score.max(state.max_score, user_score)
     }
-    #Persist score 
+    #Persist score
     if Score.equal?(state.max_score, user_score) do
       {:ok, table} = :dets.open_file(:scoring, [])
       :dets.insert(table, {:max, [String.to_charlist(player_name), user_score.value]})
@@ -111,8 +100,20 @@ defmodule DynoGangWeb.GameServer do
     {:reply, player_names, state}
   end
 
+  def handle_cast({:remove_player, player}, state) do
+    new_state = %{state |
+      players: Map.delete(state.players, player)
+    }
+    Endpoint.broadcast!("obstacle:all", "player_left", %{name: player})
+    player_names = Game.player_names(new_state)
+    IO.inspect(player, label: "removed player")
+    IO.inspect(player_names, label: "players in room")
+    {:noreply, new_state}
+  end
+
+
   def handle_info(:obstable_generator, state)  do
-    obstacle_type = :random.uniform(4) 
+    obstacle_type = :random.uniform(4)
     min = 1500
     max = 2800
     next_wait = floor(:random.uniform() * (max-min) + min)
@@ -120,5 +121,5 @@ defmodule DynoGangWeb.GameServer do
     Endpoint.broadcast!("obstacle:all", "obstacle_event", %{type: obstacle_type})
     {:noreply, state}
   end
-  
+
 end

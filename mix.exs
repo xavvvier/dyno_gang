@@ -4,8 +4,8 @@ defmodule DynoGang.MixProject do
   def project do
     [
       app: :dyno_gang,
-      version: "0.1.0",
-      elixir: "~> 1.5",
+      version: "0.1.1",
+      elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -32,8 +32,7 @@ defmodule DynoGang.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.4.11"},
-      {:phoenix_pubsub, "~> 1.1"},
+      {:phoenix, "~> 1.5.0"},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},

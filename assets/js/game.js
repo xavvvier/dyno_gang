@@ -278,6 +278,20 @@ export class Game{
           }
         }
         this.detectCollision();
+//////////////////////////
+      if(window.auto){
+         let obs = this.obstacles.filter(x => !x.skipped)[0];
+         if(obs) {
+            let obsBounds = obs.getBounds();
+            let playerBounds = this.player.sprite.getBounds();
+            if(!obs.skipped && obsBounds.x - playerBounds.x < 80) {
+               obs.skipped = true;
+               this.sendKey('up.press');
+            }
+         }
+      }
+
+//////////////////////////
       } else {
          //Move score text
          if(this.scoreText.steps){
