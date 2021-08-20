@@ -11,7 +11,7 @@ defmodule DynoGangWeb.GameChannel do
     #Prepare a list of current players to send
     #Add the player to the game state
     player_name = Map.get(socket.assigns, :user_id)
-    current_players = GameServer.player_join(player_name, character)
+    current_players = GameServer.player_join(player_name, character, false)
     case Enum.count(current_players) do
       x when x >= @maximum_players ->
         {:error,%{error: "Maximum players reached"}, socket}
@@ -20,6 +20,12 @@ defmodule DynoGangWeb.GameChannel do
         Endpoint.subscribe("obstacle:all")
         {:ok, %{players: current_players}, socket}
     end
+  end
+
+  def join("game:ghost", %{"character" => character, "username" => username}, socket) do
+    current_players = GameServer.player_join(username, character, true)
+    Endpoint.subscribe("obstacle:all")
+    {:ok, %{players: current_players}, socket}
   end
 
   def join("game:" <> _private_room, _message, _socket) do
@@ -42,7 +48,7 @@ defmodule DynoGangWeb.GameChannel do
 
   def handle_in("rejoin", %{"character" => character}, socket) do
     player_name = Map.get(socket.assigns, :user_id)
-    current_players = GameServer.player_join(player_name, character)
+    current_players = GameServer.player_join(player_name, character, false)
     {:reply, {:ok, %{players: current_players}}, socket}
   end
 

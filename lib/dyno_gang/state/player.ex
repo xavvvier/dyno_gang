@@ -1,10 +1,11 @@
 defmodule DynoGang.State.Player do
-  @derive {Jason.Encoder, only: [:name, :move, :score, :x, :alive, :character]}
+  @derive {Jason.Encoder, only: [:name, :move, :score, :x, :alive, :character, :ghost]}
   defstruct name: "",
     move: "",
     x: 0,
     score: 0,
     alive: true,
+    ghost: false,
     character: ""
 
   alias DynoGang.State.Player

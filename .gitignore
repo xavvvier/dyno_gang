@@ -36,3 +36,5 @@ npm-debug.log
 
 #Scoring persistance file
 scoring
+
+priv/static/

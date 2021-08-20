@@ -10,8 +10,8 @@ defmodule DynoGangWeb.GameServer do
     GenServer.start(__MODULE__, %Game{}, name: :game_server)
   end
 
-  def player_join(player, character) do
-    GenServer.call(:game_server, {:player_join, player, character})
+  def player_join(player, character, is_ghost) do
+    GenServer.call(:game_server, {:player_join, player, character, is_ghost})
   end
 
   def player_move(player_name, move, x, score) do
@@ -56,22 +56,22 @@ defmodule DynoGangWeb.GameServer do
     %{state | max_score: max_score}
   end
 
-  def handle_call({:player_join, player, character}, _from, state) do
+  def handle_call({:player_join, player, character, is_ghost}, _from, state) do
     current_players = state.players
-    obstacle_generator_ref = state.obstacle_generator
+    obstacle_generator = state.obstacle_generator
 
-    if is_nil(obstacle_generator_ref) do
-      {:ok, obstacle_generator_ref} = :timer.send_after(3000, :obstacle_generator)
+    if not obstacle_generator do
+      :timer.send_after(3000, :obstacle_generator)
     end
 
     # create a new player state
     IO.inspect(player, label: "adding player")
-    player_state = %Player{name: player, character: character}
+    player_state = %Player{name: player, character: character, ghost: is_ghost}
 
     new_state = %{
       state
       | players: Map.put(state.players, player, player_state),
-        obstacle_generator: obstacle_generator_ref
+        obstacle_generator: true
     }
 
     Endpoint.broadcast!("obstacle:all", "player_joined", player_state)
@@ -118,12 +118,30 @@ defmodule DynoGangWeb.GameServer do
   end
 
   def handle_cast({:remove_player, player}, state) do
-    new_state = %{state | players: Map.delete(state.players, player)}
+    players = remove_player_state(state.players, player)
+    new_state = %{ state | players: players}
     Endpoint.broadcast!("obstacle:all", "player_left", %{name: player})
     player_names = Game.player_names(new_state)
     IO.inspect(player, label: "removed player")
     IO.inspect(player_names, label: "players in room")
     {:noreply, new_state}
+  end
+
+  defp remove_player_state(players, _player) when map_size(players) == 0 do
+    players
+  end
+  defp remove_player_state(players, player) do
+    players = Map.delete(players, player)
+    # Detect if we only have the ghost player
+    [first | _tail] = Map.keys(players)
+    is_ghost = Map.get(players, first).ghost
+
+    if is_ghost and Enum.count(players) == 1 do
+      IO.puts("removing ghost player")
+      %{}
+    else
+      players
+    end
   end
 
   def handle_info(:obstacle_generator, state) do
@@ -132,16 +150,16 @@ defmodule DynoGangWeb.GameServer do
     max = 2800
     next_wait = floor(:rand.uniform() * (max - min) + min)
     Endpoint.broadcast!("obstacle:all", "obstacle_event", %{type: obstacle_type})
+    obstacle_generator = Game.total_players(state) > 0
 
-    obstacle_generator_ref = nil
-
-    if Game.total_players(state) > 0 do
-      {:ok, obstacle_generator_ref} = :timer.send_after(next_wait, :obstacle_generator)
+    if obstacle_generator do
+      :timer.send_after(next_wait, :obstacle_generator)
     else
       IO.puts("No players found, obstable generator stopped")
     end
 
-    state = %{state | obstacle_generator: obstacle_generator_ref}
+    state = %{state | obstacle_generator: obstacle_generator}
+
     {:noreply, state}
   end
 end

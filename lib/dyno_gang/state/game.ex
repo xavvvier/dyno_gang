@@ -1,6 +1,6 @@
 defmodule DynoGang.State.Game do
   @derive {Jason.Encoder, only: [:players, :max_score]}
-  defstruct players: %{}, max_score: nil, obstacle_generator: nil
+  defstruct players: %{}, max_score: nil, obstacle_generator: false
 
   alias DynoGang.State.Game
 
