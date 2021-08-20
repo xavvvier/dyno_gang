@@ -1,3 +1,6 @@
+# remove prod.secrets.exs
+config/prod.secrets.exs
+
 # The directory Mix will write compiled artifacts to.
 /_build/
 
