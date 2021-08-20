@@ -17,9 +17,9 @@ defmodule DynoGangWeb.UserSocket do
   # performing token verification on connect.
   def connect(%{"token" => token}, socket, _conn_info) do
     case Phoenix.Token.verify(socket, "user authentication salt", token, max_age: 1209600) do
-      {:ok, user_id}   -> 
+      {:ok, user_id}   ->
         {:ok, assign(socket, :user_id, user_id)}
-      {:error, reason} -> 
+      {:error, _reason} ->
         :error
     end
   end

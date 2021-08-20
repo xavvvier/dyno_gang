@@ -13,7 +13,7 @@ defmodule DynoGangWeb.GameChannel do
     player_name = Map.get(socket.assigns, :user_id)
     current_players = GameServer.player_join(player_name, character)
     case Enum.count(current_players) do
-      x when x >= @maximum_players -> 
+      x when x >= @maximum_players ->
         {:error,%{error: "Maximum players reached"}, socket}
       _ ->
         #Subscribe to the obstacle topic
@@ -21,7 +21,7 @@ defmodule DynoGangWeb.GameChannel do
         {:ok, %{players: current_players}, socket}
     end
   end
-  
+
   def join("game:" <> _private_room, _message, _socket) do
     {:error, %{error: "unauthorized"}}
   end
@@ -35,7 +35,7 @@ defmodule DynoGangWeb.GameChannel do
 
   def handle_in("die", _ , socket) do
     player_name = Map.get(socket.assigns, :user_id)
-    state = GameServer.player_dead(player_name)
+    GameServer.player_dead(player_name)
     broadcast!(socket, "player_dead", %{name: player_name})
     {:noreply, socket}
   end
@@ -52,7 +52,7 @@ defmodule DynoGangWeb.GameChannel do
     {:noreply, socket}
   end
 
-  def terminate(reason, state) do
+  def terminate(_reason, state) do
     GameServer.remove_player(state.assigns.user_id)
   end
 

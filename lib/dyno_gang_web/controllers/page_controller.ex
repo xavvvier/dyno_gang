@@ -12,7 +12,7 @@ defmodule DynoGangWeb.PageController do
   def validate(conn, %{"username" => username}) do
     players = GameServer.player_names()
     #Validate the username is not on the game server
-    valid = not username in players
+    valid = username not in players
     maximum_players = Enum.count(players) <= @maximum_players
     #assign user token only when a valid username is requested
     case {valid, maximum_players} do

@@ -132,7 +132,6 @@ defmodule DynoGangWeb.GameServer do
     max = 2800
     next_wait = floor(:rand.uniform() * (max - min) + min)
     Endpoint.broadcast!("obstacle:all", "obstacle_event", %{type: obstacle_type})
-    total_players = Game.total_players(state)
 
     obstacle_generator_ref = nil
 
