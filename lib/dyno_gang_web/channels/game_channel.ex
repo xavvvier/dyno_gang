@@ -8,28 +8,37 @@ defmodule DynoGangWeb.GameChannel do
   @maximum_players 8
 
   def join("game:all", %{"character" => character}, socket) do
-    #Prepare a list of current players to send
-    #Add the player to the game state
+    # Prepare a list of current players to send
+    # Add the player to the game state
     player_name = Map.get(socket.assigns, :user_id)
     current_players = GameServer.player_join(player_name, character, false)
+
     case Enum.count(current_players) do
       x when x >= @maximum_players ->
-        {:error,%{error: "Maximum players reached"}, socket}
+        {:error, %{error: "Maximum players reached"}, socket}
+
       _ ->
-        #Subscribe to the obstacle topic
+        # Subscribe to the obstacle topic
         Endpoint.subscribe("obstacle:all")
         {:ok, %{players: current_players}, socket}
     end
   end
 
-  def join("game:ghost", %{"character" => character, "username" => username}, socket) do
-    current_players = GameServer.player_join(username, character, true)
-    Endpoint.subscribe("obstacle:all")
-    {:ok, %{players: current_players}, socket}
-  end
 
   def join("game:" <> _private_room, _message, _socket) do
-    {:error, %{error: "unauthorized"}}
+    {:error, %{error: "unauthorized to join"}}
+  end
+
+  def handle_in("start_ghost", %{"ghost_name" => ghost_name, "character" => character }, socket) do
+    IO.puts("joining ghost  #{ghost_name}")
+    GameServer.player_join(ghost_name, character, true)
+    {:noreply, socket}
+  end
+
+  def handle_in("ghost_action", %{"key" => key, "x" => x, "score" => score}, socket) do
+    state = GameServer.ghost_move(key, x, score)
+    broadcast!(socket, "player_move", %{response: state})
+    {:noreply, socket}
   end
 
   def handle_in("action", %{"key" => key, "x" => x, "score" => score}, socket) do
@@ -39,7 +48,7 @@ defmodule DynoGangWeb.GameChannel do
     {:noreply, socket}
   end
 
-  def handle_in("die", _ , socket) do
+  def handle_in("die", _, socket) do
     player_name = Map.get(socket.assigns, :user_id)
     GameServer.player_dead(player_name)
     broadcast!(socket, "player_dead", %{name: player_name})
@@ -52,7 +61,7 @@ defmodule DynoGangWeb.GameChannel do
     {:reply, {:ok, %{players: current_players}}, socket}
   end
 
-  #Message generated at intervals in GameServer to broadcast obstacle events
+  # Message generated at intervals in GameServer to broadcast obstacle events
   def handle_info(%Broadcast{event: event, payload: payload}, socket) do
     push(socket, event, payload)
     {:noreply, socket}
@@ -61,5 +70,4 @@ defmodule DynoGangWeb.GameChannel do
   def terminate(_reason, state) do
     GameServer.remove_player(state.assigns.user_id)
   end
-
 end

@@ -18,6 +18,10 @@ defmodule DynoGangWeb.GameServer do
     GenServer.call(:game_server, {:player_move, player_name, move, x, score})
   end
 
+  def ghost_move(move, x, score) do
+    GenServer.call(:game_server, {:ghost_move, move, x, score})
+  end
+
   def remove_player(player) do
     GenServer.cast(:game_server, {:remove_player, player})
   end
@@ -90,6 +94,27 @@ defmodule DynoGangWeb.GameServer do
     {:reply, state, state}
   end
 
+  def handle_call({:ghost_move, key, x, score}, _from, state) do
+    # get the player ghost state
+    player = Enum.find(state.players, fn {_k, player} -> player.ghost end)
+
+    state =
+      case player do
+        {player_name, player_state} ->
+          # update the game state
+          state = %{
+            state
+            | players:
+                Map.put(state.players, player_name, Player.move(player_state, key, x, score))
+          }
+
+        nil ->
+          state
+      end
+
+    {:reply, state, state}
+  end
+
   def handle_call({:die, player_name}, _from, state) do
     # get the player state
     player_state = Map.get(state.players, player_name)
@@ -119,7 +144,7 @@ defmodule DynoGangWeb.GameServer do
 
   def handle_cast({:remove_player, player}, state) do
     players = remove_player_state(state.players, player)
-    new_state = %{ state | players: players}
+    new_state = %{state | players: players}
     Endpoint.broadcast!("obstacle:all", "player_left", %{name: player})
     player_names = Game.player_names(new_state)
     IO.inspect(player, label: "removed player")
@@ -130,6 +155,7 @@ defmodule DynoGangWeb.GameServer do
   defp remove_player_state(players, _player) when map_size(players) == 0 do
     players
   end
+
   defp remove_player_state(players, player) do
     players = Map.delete(players, player)
     # Detect if we only have the ghost player

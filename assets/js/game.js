@@ -176,7 +176,7 @@ export class Game {
   onConnected(resp) {
      if(Object.keys(resp.players).length === 0) {
         // There's only one player, let's create a ghost so you don't feel lonely
-        this.ghost = new Ghost(this.socket)
+        this.ghost = new Ghost(this.channel);
      }
 
     //render the players already playing
@@ -276,8 +276,8 @@ export class Game {
     for (const player_name in movements) {
       if (player_name !== this.username && player_name in this.players) {
         this.players[player_name].move(movements[player_name]);
-        scores.push(movements[player_name]);
       }
+      scores.push(movements[player_name]);
     }
     //update score
     scores.sort((a, b) => b.score - a.score);
@@ -306,7 +306,9 @@ export class Game {
     this.floorSprite.tilePosition.x -= 0.8;
     if (!this.isGameOver) {
       this.player.update();
-      console.log('this.players :>> ', this.players);
+      if (this.ghost) {
+        this.ghost.update(this.obstacles, this.players);
+      }
       for (const remotePlayer in this.players) {
         this.players[remotePlayer].update();
       }
@@ -321,17 +323,6 @@ export class Game {
         }
       }
       this.detectCollision();
-      if (window.auto) {
-        let obs = this.obstacles.filter((x) => !x.skipped)[0];
-        if (obs) {
-          let obsBounds = obs.getBounds();
-          let playerBounds = this.player.sprite.getBounds();
-          if (!obs.skipped && obsBounds.x - playerBounds.x < 80) {
-            obs.skipped = true;
-            this.sendKey('up.press');
-          }
-        }
-      }
     } else {
       //Move score text
       if (this.scoreText.steps) {
@@ -418,6 +409,7 @@ export class Game {
       this.channel.push('rejoin', { character: this.character }).receive('ok', (state) => {
         this.resetGameState();
         this.player.setInitialState();
+        if (this.ghost) this.ghost.setInitialState();
         this.isGameOver = false;
         this.onConnected(state);
         this.channelSubscribe();
