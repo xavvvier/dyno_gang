@@ -1,0 +1,78 @@
+[v-cloak] { display: none }
+#userInput{
+   background-color: #002b36;
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   padding: 20px;
+   border-radius: 2px;
+}
+.user-characters{
+   margin-top: 10px;
+}
+.user-character{
+   display: flex;
+   align-items: center;
+   opacity: 0.6;
+   cursor: pointer;
+}
+.selected{
+   opacity: 1;
+   border: 1px dashed gray;
+}
+.user-character span{
+   display: inline-block;
+	width: 32px;
+	height: 32px;
+}
+.user-character label{
+   padding-top: 5px;
+   cursor: pointer;
+}
+.pinkman{
+   background: url('../images/pinkman-7473a763aec5939b7eaf35d5811e01d4.png?vsn=d') no-repeat -128px -128px;
+}
+.ninjafrog{
+   background: url('../images/ninjafrog-0d6d88f58c09cf8cba878d3f4e822257.png?vsn=d') no-repeat -128px -128px;
+}
+.maskdude{
+   background: url('../images/maskdude-7e30e155463df872378fe388b8e1b4b8.png?vsn=d') no-repeat -128px -128px;
+}
+.virtualguy{
+   background: url('../images/virtualguy-77b416ea7c58845d22b77f7d3cf3844b.png?vsn=d') no-repeat -128px -128px;
+}
+button{
+   background: black;
+   color: white;
+   padding: 8px;
+   border: 1px solid;
+   margin-top: 10px;
+}
+span.hidden { 
+   opacity: 0;
+   font-size: 0;
+}
+span.error {
+   color: red;
+}
+span, div, label {
+   font-family: pixellari, sans-serif;
+}
+.flex-container {
+   height: 100%;
+   padding: 0;
+   margin: 0;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+html, body {
+   height: 100%;
+   background-color: #211f2f;
+   margin:0;
+   padding:0;
+   overflow: hidden;
+   color: white;
+}
+

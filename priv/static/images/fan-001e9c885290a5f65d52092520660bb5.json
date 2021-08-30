@@ -1,0 +1,97 @@
+{
+  "frames": {
+    "fan1": {
+      "frame": {
+        "x": 1,
+        "y": 0,
+        "w": 23,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 23,
+        "h": 8
+      },
+      "sourceSize": {
+        "w": 23,
+        "h": 8
+      }
+    },
+    "fan2": {
+      "frame": {
+        "x": 29,
+        "y": 0,
+        "w": 15,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 15,
+        "h": 8
+      },
+      "sourceSize": {
+        "w": 15,
+        "h": 8
+      }
+    },
+    "fan3": {
+      "frame": {
+        "x": 57,
+        "y": 0,
+        "w": 7,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 7,
+        "h": 8
+      },
+      "sourceSize": {
+        "w": 7,
+        "h": 8
+      }
+    },
+     "fan4": {
+      "frame": {
+        "x": 77,
+        "y": 0,
+        "w": 15,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 15,
+        "h": 8
+      },
+      "sourceSize": {
+        "w": 15,
+        "h": 8
+      }
+    }
+  },
+  "animations": {
+   "default": ["fan1", "fan2", "fan3", "fan4"]
+  },
+  "meta": {
+    "app": "https://www.leshylabs.com/apps/sstool/",
+    "version": "Leshy SpriteSheet Tool v0.8.4",
+    "image": "fan.png",
+    "size": {
+      "w": 96,
+      "h": 8
+    },
+    "scale": 0.5
+  }
+}
