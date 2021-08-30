@@ -102,7 +102,7 @@ defmodule DynoGangWeb.GameServer do
       case player do
         {player_name, player_state} ->
           # update the game state
-          state = %{
+          %{
             state
             | players:
                 Map.put(state.players, player_name, Player.move(player_state, key, x, score))
