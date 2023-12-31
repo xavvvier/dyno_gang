@@ -5,13 +5,13 @@
 # is restricted to this project.
 
 # General application configuration
-use Mix.Config
+import Config
 
 # Configures the endpoint
 config :dyno_gang, DynoGangWeb.Endpoint,
   url: [host: "jgonzalez.ca"],
   secret_key_base: "gdOSJH3OobbiPajydhDQTbqr+3MPLJvA2aHhMyIJhPx8DUEd8/3n5C+XSK+Dy7jk",
-  render_errors: [view: DynoGangWeb.ErrorView, accepts: ~w(html json)],
+  render_errors: [view: DynoGangWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: DynoGang.PubSub
 
 # Configures Elixir's Logger

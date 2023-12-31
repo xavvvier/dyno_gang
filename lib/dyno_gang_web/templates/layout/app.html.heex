@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>DynoGang</title>
-    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
+    <link rel="stylesheet" href={Routes.static_path(@conn, "/css/app.css")}/>
     <style type="text/css" media="all">
       @font-face { font-family: pixellari; src: url('fonts/pixellari.ttf'); }
     </style>
@@ -16,9 +16,9 @@
       <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
       <%= @inner_content %>
     </main>
-    <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/pixi.min.js") %>"></script>
+    <script type="text/javascript" src={Routes.static_path(@conn, "/js/pixi.min.js")}></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@0.19.2/dist/axios.min.js"></script>
-    <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
+    <script type="text/javascript" src={Routes.static_path(@conn, "/js/app.js")}></script>
   </body>
 </html>
